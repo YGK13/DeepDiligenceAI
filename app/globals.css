@@ -1,0 +1,227 @@
+/* ============================================================ */
+/* DeepDiligence AI — Global Styles                              */
+/* Tailwind v4 + custom theme variables for the dark design      */
+/* ============================================================ */
+@import "tailwindcss";
+
+/* ============================================================ */
+/* CSS CUSTOM PROPERTIES — Design tokens matching original MVP   */
+/* These are used as Tailwind arbitrary values: bg-[var(--bg-primary)] */
+/* ============================================================ */
+:root {
+  /* --- Background layers (darkest → lightest) --- */
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-card: #1e2130;
+  --bg-input: #252836;
+
+  /* --- Borders --- */
+  --border: #2d3148;
+
+  /* --- Text hierarchy --- */
+  --text-primary: #e8e9ed;
+  --text-secondary: #9ca0b0;
+  --text-muted: #6b7084;
+
+  /* --- Accent colors --- */
+  --accent-blue: #4a7dff;
+  --accent-green: #34d399;
+  --accent-red: #ef4444;
+  --accent-amber: #f59e0b;
+  --accent-purple: #a78bfa;
+  --accent-cyan: #22d3ee;
+  --accent-israel: #0038b8;
+
+  /* --- Shared values --- */
+  --radius: 8px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================ */
+/* BASE RESETS                                                   */
+/* ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================ */
+/* SCROLLBAR STYLING — Consistent dark scrollbars                */
+/* ============================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================================ */
+/* FORM ELEMENT BASE STYLES                                      */
+/* These ensure consistent rendering across browsers             */
+/* ============================================================ */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* --- Range slider accent color (for score inputs) --- */
+input[type='range'] {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* ============================================================ */
+/* FOCUS RING — Accessible focus indicator                        */
+/* ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================ */
+/* AI PANEL LOADING ANIMATION                                    */
+/* ============================================================ */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ai-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================================ */
+/* PRINT STYLES — Clean print for reports                        */
+/* ============================================================ */
+@media print {
+  /* Hide navigation chrome */
+  .sidebar,
+  .top-bar,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Full-width content */
+  .content-scroll {
+    padding: 0 !important;
+  }
+
+  /* Light theme for print */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Card styling for print */
+  .card {
+    break-inside: avoid;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+  }
+
+  /* Ensure report is full width */
+  .report-container {
+    max-width: 100% !important;
+  }
+}
+
+/* ============================================================ */
+/* RESPONSIVE SIDEBAR COLLAPSE                                   */
+/* Mobile: sidebar collapses to icons-only (60px)                */
+/* ============================================================ */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 60px !important;
+  }
+
+  .sidebar .nav-label,
+  .sidebar .sidebar-subtitle,
+  .sidebar .nav-badge,
+  .sidebar .nav-section-label {
+    display: none !important;
+  }
+
+  .sidebar .sidebar-title {
+    font-size: 12px !important;
+  }
+}
+
+/* ============================================================ */
+/* UTILITY CLASSES — Shared across components                    */
+/* ============================================================ */
+
+/* Gradient border effect for AI panels */
+.ai-panel-border {
+  background: linear-gradient(
+    135deg,
+    rgba(74, 125, 255, 0.05),
+    rgba(167, 139, 250, 0.05)
+  );
+  border: 1px solid rgba(74, 125, 255, 0.2);
+}
+
+/* Score color utilities */
+.score-green {
+  color: var(--accent-green);
+}
+.score-amber {
+  color: var(--accent-amber);
+}
+.score-red {
+  color: var(--accent-red);
+}
+
+/* Completion bar */
+.completion-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-input);
+  overflow: hidden;
+}
+
+.completion-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}

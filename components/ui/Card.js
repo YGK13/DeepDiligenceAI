@@ -1,0 +1,81 @@
+'use client';
+
+// ============================================================
+// Card.js — Dark-Themed Card Container Component
+// ============================================================
+// A reusable card wrapper that provides consistent visual structure
+// throughout the app. Includes optional header with title, subtitle,
+// and a right-aligned action slot for buttons or controls.
+// ============================================================
+
+import React from 'react';
+
+// ============================================================
+// Card Component
+// ============================================================
+// Props:
+//   children    — card body content
+//   title       — optional header title (rendered as h3, 16px semibold)
+//   subtitle    — optional subtitle below the title (12px muted text)
+//   headerRight — optional React node rendered on the right side of the header
+//                 (use for action buttons, badges, toggles, etc.)
+//   className   — additional CSS classes to merge onto the outer container
+// ============================================================
+export default function Card({
+  children,
+  title,
+  subtitle,
+  headerRight,
+  className = '',
+}) {
+  // Determine if we need to render the header section at all
+  // Only render when at least one header prop is provided
+  const hasHeader = title || subtitle || headerRight;
+
+  return (
+    <div
+      className={`
+        bg-[#1e2130]
+        border border-[#2d3148]
+        rounded-lg
+        p-5
+        mb-4
+        ${className}
+      `}
+    >
+      {/* --------------------------------------------------------
+          Card Header — only rendered when title, subtitle, or
+          headerRight props are provided
+          -------------------------------------------------------- */}
+      {hasHeader && (
+        <div className="flex items-start justify-between gap-3 mb-4">
+          {/* Left side: title + subtitle stack */}
+          <div className="min-w-0 flex-1">
+            {title && (
+              <h3 className="text-[16px] font-semibold text-[#e8e9ed] leading-tight">
+                {title}
+              </h3>
+            )}
+            {subtitle && (
+              <p className="text-[12px] text-[#6b7084] mt-0.5 leading-normal">
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Right side: action slot (buttons, badges, etc.) */}
+          {headerRight && (
+            <div className="flex-shrink-0 flex items-center gap-2">
+              {headerRight}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* --------------------------------------------------------
+          Card Body — renders children as-is
+          -------------------------------------------------------- */}
+      {children}
+    </div>
+  );
+}
