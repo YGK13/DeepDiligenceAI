@@ -1,11 +1,16 @@
 'use client';
 // ============================================================
 // DeepDiligence AI — Main Application Page
+// ============================================================
 // Orchestrates state management, routing between views,
 // company CRUD, and settings persistence.
+//
+// DATA LAYER: Uses Supabase hooks (useCompanies, useSettings)
+// which automatically fall back to localStorage when Supabase
+// is not configured. Zero-config local mode, cloud-ready.
 // ============================================================
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 // ============================================================
 // LAYOUT COMPONENTS
@@ -42,84 +47,12 @@ import {
 } from '@/components/sections';
 
 // ============================================================
-// DATA LAYER
+// DATA LAYER — Supabase hooks with localStorage fallback
 // ============================================================
-import { createEmptyCompany } from '@/lib/schemas';
+import { useSupabaseAuth } from '@/lib/hooks/useSupabaseAuth';
+import { useCompanies } from '@/lib/hooks/useCompanies';
+import { useSettings } from '@/lib/hooks/useSettings';
 import { calculateOverallScore, calculateCompletionStats } from '@/lib/scoring';
-import { SCORE_WEIGHTS } from '@/lib/constants';
-
-// ============================================================
-// LOCALSTORAGE KEYS — for client-side persistence
-// Will be replaced by Supabase in Phase 2
-// ============================================================
-const STORAGE_KEY = 'deepdiligence_companies';
-const SETTINGS_KEY = 'deepdiligence_settings';
-const DEFAULT_SETTINGS = { provider: 'perplexity', apiKeys: {}, models: {} };
-
-// ============================================================
-// PERSISTENCE HELPERS — localStorage read/write
-// ============================================================
-function loadCompanies() {
-  try {
-    if (typeof window === 'undefined') return [];
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveCompanies(companies) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(companies));
-  } catch (e) {
-    console.error('Save failed:', e);
-  }
-}
-
-function loadSettings() {
-  try {
-    if (typeof window === 'undefined') return { ...DEFAULT_SETTINGS };
-    const data = localStorage.getItem(SETTINGS_KEY);
-    if (!data) return { ...DEFAULT_SETTINGS };
-    const parsed = JSON.parse(data);
-
-    // Migration: convert old single-key format to multi-provider
-    if (parsed.apiKey && !parsed.apiKeys) {
-      const migrated = {
-        provider: 'anthropic',
-        apiKeys: { anthropic: parsed.apiKey },
-        models: {
-          anthropic: parsed.model || 'claude-sonnet-4-20250514',
-        },
-      };
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
-
-    return {
-      provider: parsed.provider || 'perplexity',
-      apiKeys: parsed.apiKeys || {},
-      models: parsed.models || {},
-    };
-  } catch (e) {
-    return { ...DEFAULT_SETTINGS };
-  }
-}
-
-function saveSettings(settings) {
-  try {
-    // Only persist canonical keys — strip legacy fields
-    const clean = {
-      provider: settings.provider,
-      apiKeys: settings.apiKeys,
-      models: settings.models,
-    };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(clean));
-  } catch (e) {
-    console.error('Settings save failed:', e);
-  }
-}
 
 // ============================================================
 // SECTION → COMPONENT MAPPING
@@ -148,33 +81,46 @@ const SECTION_COMPONENTS = {
 // MAIN APP COMPONENT
 // ============================================================
 export default function HomePage() {
-  // --- Core state ---
-  const [companies, setCompanies] = useState([]);
+  // ============================================================
+  // AUTH & DATA HOOKS
+  // ============================================================
+  // useSupabaseAuth: returns { user, loading: authLoading, signOut }
+  // useCompanies: returns { companies, loading, createCompany, updateCompany, deleteCompany, importCompanies }
+  // useSettings: returns { settings, loading, saveSettings }
+  //
+  // When Supabase is not configured (no env vars), all three hooks
+  // run in "local mode" — user=null, data from localStorage.
+  // ============================================================
+  const { user, loading: authLoading, signOut } = useSupabaseAuth();
+  const {
+    companies,
+    setCompanies,
+    loading: companiesLoading,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    importCompanies,
+  } = useCompanies(user);
+  const { settings, loading: settingsLoading, saveSettings } = useSettings(user);
+
+  // --- UI state (not persisted) ---
   const [activeCompanyId, setActiveCompanyId] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [showNewModal, setShowNewModal] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
-  const [isHydrated, setIsHydrated] = useState(false);
 
-  // --- Load persisted data on mount (client-side only) ---
-  useEffect(() => {
-    const loaded = loadCompanies();
-    const loadedSettings = loadSettings();
-    setCompanies(loaded);
-    setSettings(loadedSettings);
-    if (loaded.length > 0) {
-      setActiveCompanyId(loaded[0].id);
-    }
-    setIsHydrated(true);
-  }, []);
+  // --- Derived loading state ---
+  // We're "hydrated" when all async data loads have finished.
+  // This prevents flash-of-empty-content on first render.
+  const isHydrated = !authLoading && !companiesLoading && !settingsLoading;
 
-  // --- Auto-save companies whenever they change ---
-  useEffect(() => {
-    if (isHydrated && companies.length > 0) {
-      saveCompanies(companies);
+  // --- Auto-select first company when companies load ---
+  // Only runs when companies change AND no company is selected
+  useMemo(() => {
+    if (isHydrated && companies.length > 0 && !activeCompanyId) {
+      setActiveCompanyId(companies[0].id);
     }
-  }, [companies, isHydrated]);
+  }, [isHydrated, companies, activeCompanyId]);
 
   // --- Derive the active company from state ---
   const company = useMemo(
@@ -205,40 +151,40 @@ export default function HomePage() {
 
   // Create a new company and switch to it
   const handleNewCompany = useCallback(
-    (name) => {
+    async (name) => {
       if (!name?.trim()) return;
-      const newCompany = createEmptyCompany(name.trim());
-      setCompanies((prev) => [...prev, newCompany]);
-      setActiveCompanyId(newCompany.id);
-      setActiveTab('overview');
+      const newCompany = await createCompany(name.trim());
+      if (newCompany) {
+        setActiveCompanyId(newCompany.id);
+        setActiveTab('overview');
+      }
       setShowNewModal(false);
       setNewCompanyName('');
     },
-    []
+    [createCompany]
   );
 
   // Delete the active company (with confirmation)
-  const handleDeleteCompany = useCallback(() => {
+  const handleDeleteCompany = useCallback(async () => {
     if (!company) return;
     if (
       !window.confirm(
-        `Delete "${company.overview?.name || 'Unnamed'}"? This cannot be undone.`
+        `Delete "${company.overview?.companyName || company.overview?.name || 'Unnamed'}"? This cannot be undone.`
       )
     )
       return;
 
-    setCompanies((prev) => {
-      const updated = prev.filter((c) => c.id !== activeCompanyId);
-      // Switch to the next available company or null
-      if (updated.length > 0) {
-        setActiveCompanyId(updated[0].id);
-      } else {
-        setActiveCompanyId(null);
-      }
-      return updated;
-    });
+    await deleteCompany(activeCompanyId);
+
+    // Switch to the next available company or null
+    const remaining = companies.filter((c) => c.id !== activeCompanyId);
+    if (remaining.length > 0) {
+      setActiveCompanyId(remaining[0].id);
+    } else {
+      setActiveCompanyId(null);
+    }
     setActiveTab('dashboard');
-  }, [company, activeCompanyId]);
+  }, [company, activeCompanyId, companies, deleteCompany]);
 
   // Switch active company
   const handleCompanyChange = useCallback((companyId) => {
@@ -248,23 +194,16 @@ export default function HomePage() {
 
   // ============================================================
   // SECTION DATA UPDATE HANDLER
-  // Called by every section component when a field changes
+  // Called by every section component when a field changes.
+  // Delegates to useCompanies.updateCompany which handles both
+  // Supabase and localStorage persistence.
   // ============================================================
   const handleSectionChange = useCallback(
     (sectionKey, updatedData) => {
       if (!activeCompanyId) return;
-      setCompanies((prev) =>
-        prev.map((c) => {
-          if (c.id !== activeCompanyId) return c;
-          return {
-            ...c,
-            [sectionKey]: updatedData,
-            updatedAt: new Date().toISOString(),
-          };
-        })
-      );
+      updateCompany(activeCompanyId, sectionKey, updatedData);
     },
-    [activeCompanyId]
+    [activeCompanyId, updateCompany]
   );
 
   // ============================================================
@@ -274,27 +213,20 @@ export default function HomePage() {
   const handleAiResult = useCallback(
     (sectionId, text) => {
       if (!activeCompanyId) return;
-      setCompanies((prev) =>
-        prev.map((c) => {
-          if (c.id !== activeCompanyId) return c;
-          return {
-            ...c,
-            aiResearch: { ...c.aiResearch, [sectionId]: text },
-            updatedAt: new Date().toISOString(),
-          };
-        })
-      );
+      updateCompany(activeCompanyId, 'aiResearch', { [sectionId]: text });
     },
-    [activeCompanyId]
+    [activeCompanyId, updateCompany]
   );
 
   // ============================================================
   // SETTINGS HANDLER
   // ============================================================
-  const handleSaveSettings = useCallback((newSettings) => {
-    setSettings(newSettings);
-    saveSettings(newSettings);
-  }, []);
+  const handleSaveSettings = useCallback(
+    (newSettings) => {
+      saveSettings(newSettings);
+    },
+    [saveSettings]
+  );
 
   // ============================================================
   // DATA IMPORT/EXPORT
@@ -317,28 +249,30 @@ export default function HomePage() {
     URL.revokeObjectURL(url);
   }, [companies, settings]);
 
-  const handleImportData = useCallback((file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (data.companies) {
-          setCompanies(data.companies);
-          if (data.companies.length > 0) {
-            setActiveCompanyId(data.companies[0].id);
+  const handleImportData = useCallback(
+    (file) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.companies) {
+            await importCompanies(data.companies);
+            if (data.companies.length > 0) {
+              setActiveCompanyId(data.companies[0].id);
+            }
           }
+          if (data.settings) {
+            saveSettings(data.settings);
+          }
+          alert(`Imported ${data.companies?.length || 0} companies successfully.`);
+        } catch (err) {
+          alert('Import failed: Invalid JSON file.');
         }
-        if (data.settings) {
-          setSettings(data.settings);
-          saveSettings(data.settings);
-        }
-        alert(`Imported ${data.companies?.length || 0} companies successfully.`);
-      } catch (err) {
-        alert('Import failed: Invalid JSON file.');
-      }
-    };
-    reader.readAsText(file);
-  }, []);
+      };
+      reader.readAsText(file);
+    },
+    [importCompanies, saveSettings]
+  );
 
   // ============================================================
   // CONTENT RENDERER — Maps activeTab to the right component
@@ -431,6 +365,8 @@ export default function HomePage() {
         onDeleteCompany={handleDeleteCompany}
         overallScore={overallScore}
         completionBadges={completionBadges}
+        user={user}
+        onSignOut={signOut}
       >
         {renderContent()}
       </AppShell>

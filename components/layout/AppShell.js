@@ -45,6 +45,8 @@ export default function AppShell({
   onDeleteCompany,
   overallScore,
   completionBadges,
+  user,
+  onSignOut,
 }) {
   return (
     // ---------- Root container ----------
@@ -76,6 +78,8 @@ export default function AppShell({
           onNewCompany={onNewCompany}
           onDeleteCompany={onDeleteCompany}
           overallScore={overallScore}
+          user={user}
+          onSignOut={onSignOut}
         />
 
         {/* ---------- Scrollable content area ---------- */}

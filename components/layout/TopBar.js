@@ -55,6 +55,8 @@ export default function TopBar({
   onNewCompany,
   onDeleteCompany,
   overallScore,
+  user,
+  onSignOut,
 }) {
   // ---------- Handle dropdown change ----------
   // Convert the <select> string value back to the expected id type and
@@ -177,6 +179,22 @@ export default function TopBar({
             </span>
           </div>
         </div>
+
+        {/* ---------- User indicator / Sign out ---------- */}
+        {user && (
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-[#4a7dff]/20 border border-[#4a7dff]/40 flex items-center justify-center text-[10px] font-bold text-[#4a7dff] uppercase" title={user.email}>
+              {user.email?.[0] || 'U'}
+            </div>
+            <button
+              onClick={onSignOut}
+              className="text-[#6b7084] text-xs hover:text-[#ef4444] transition-colors"
+              title="Sign out"
+            >
+              Sign out
+            </button>
+          </div>
+        )}
 
         {/* ---------- Delete company button ---------- */}
         {/* Only shown when there is an active company to delete */}
