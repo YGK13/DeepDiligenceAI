@@ -22,6 +22,7 @@ import AppShell from '@/components/layout/AppShell';
 // ============================================================
 import DashboardView from '@/components/views/DashboardView';
 import ReportView from '@/components/views/ReportView';
+import ComparisonView from '@/components/views/ComparisonView';
 import SettingsView from '@/components/views/SettingsView';
 
 // ============================================================
@@ -306,6 +307,9 @@ export default function HomePage() {
     }
     if (activeTab === 'report') {
       return <ReportView company={company} />;
+    }
+    if (activeTab === 'comparison') {
+      return <ComparisonView companies={companies} />;
     }
     if (activeTab === 'settings') {
       return (

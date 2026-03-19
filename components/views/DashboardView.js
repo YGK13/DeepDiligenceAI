@@ -97,8 +97,48 @@ export default function DashboardView({ company }) {
     return list;
   }, [completionStats]);
 
+  // ============ KEY METRICS ============
+  // Pull headline metrics from the company data for the quick-glance card
+  const keyMetrics = useMemo(() => {
+    if (!company) return [];
+    const ov = company.overview || {};
+    const tm = company.team || {};
+    const tr = company.traction || {};
+    const fi = company.financial || {};
+    const dl = company.deal || {};
+
+    return [
+      { label: 'Stage', value: ov.stage || '—' },
+      { label: 'Sector', value: ov.sector || '—' },
+      { label: 'Founded', value: ov.yearFounded || '—' },
+      { label: 'Team Size', value: tm.totalTeamSize || '—' },
+      { label: 'Monthly Revenue', value: tr.monthlyRevenue ? `$${Number(tr.monthlyRevenue).toLocaleString()}` : '—' },
+      { label: 'Burn Rate', value: fi.monthlyBurnRate ? `$${Number(fi.monthlyBurnRate).toLocaleString()}/mo` : '—' },
+      { label: 'Total Raised', value: fi.totalRaised ? `$${Number(fi.totalRaised).toLocaleString()}` : '—' },
+      { label: 'Ask', value: dl.roundSize ? `$${Number(dl.roundSize).toLocaleString()}` : '—' },
+    ];
+  }, [company]);
+
   return (
     <div className="space-y-6">
+      {/* ============ SECTION 0: KEY METRICS ROW ============ */}
+      {/* Quick-glance metrics strip — the most important numbers at a glance */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {keyMetrics.map((m) => (
+          <div
+            key={m.label}
+            className="bg-[#1e2130] border border-[#2d3148] rounded-lg px-4 py-3"
+          >
+            <p className="text-[#6b7084] text-[10px] uppercase tracking-wider font-medium mb-1">
+              {m.label}
+            </p>
+            <p className="text-[#e8e9ed] text-sm font-semibold truncate">
+              {m.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
       {/* ============ SECTION 1: OVERALL SCORE ============ */}
       {/* Large centered score badge with verdict text */}
       <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-6 text-center">
