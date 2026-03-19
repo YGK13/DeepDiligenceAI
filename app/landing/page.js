@@ -7,7 +7,7 @@
 // Designed to convert visitors into users/customers.
 // ============================================================================
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 // ============ FEATURE DATA ============
 const FEATURES = [
@@ -121,6 +121,36 @@ const TESTIMONIALS = [
 // ============ COMPONENT ============
 export default function LandingPage() {
   const [email, setEmail] = useState('');
+  const [submitState, setSubmitState] = useState('idle'); // idle | loading | success | error
+  const [submitError, setSubmitError] = useState('');
+
+  // ============ WAITLIST SUBMIT HANDLER ============
+  const handleWaitlistSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setSubmitState('loading');
+    setSubmitError('');
+
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Submission failed');
+      }
+
+      setSubmitState('success');
+      setEmail('');
+    } catch (err) {
+      setSubmitState('error');
+      setSubmitError(err.message || 'Something went wrong. Please try again.');
+    }
+  }, [email]);
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-[#e8e9ed]">
@@ -383,18 +413,39 @@ export default function LandingPage() {
             Join the waitlist for early access and a 30-day free trial.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 px-4 py-3 bg-[#252836] border border-[#2d3148] rounded-lg text-[#e8e9ed] text-sm placeholder:text-[#6b7084] focus:border-[#4a7dff] outline-none"
-            />
-            <button className="px-6 py-3 bg-[#4a7dff] text-white font-bold rounded-lg hover:bg-[#3d6be6] transition-colors whitespace-nowrap">
-              Get Early Access
-            </button>
-          </div>
+          {submitState === 'success' ? (
+            <div className="px-6 py-4 bg-[#34d399]/10 border border-[#34d399]/30 rounded-xl max-w-md mx-auto">
+              <p className="text-[#34d399] font-semibold text-sm">
+                You&apos;re on the list! We&apos;ll notify you when early access opens.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="flex-1 px-4 py-3 bg-[#252836] border border-[#2d3148] rounded-lg text-[#e8e9ed] text-sm placeholder:text-[#6b7084] focus:border-[#4a7dff] outline-none"
+              />
+              <button
+                type="submit"
+                disabled={submitState === 'loading'}
+                className={
+                  'px-6 py-3 font-bold rounded-lg transition-colors whitespace-nowrap text-sm ' +
+                  (submitState === 'loading'
+                    ? 'bg-[#4a7dff]/50 text-white/70 cursor-not-allowed'
+                    : 'bg-[#4a7dff] text-white hover:bg-[#3d6be6] cursor-pointer')
+                }
+              >
+                {submitState === 'loading' ? 'Joining...' : 'Get Early Access'}
+              </button>
+            </form>
+          )}
+          {submitState === 'error' && (
+            <p className="text-[#ef4444] text-xs mt-2">{submitError}</p>
+          )}
         </div>
       </section>
 
