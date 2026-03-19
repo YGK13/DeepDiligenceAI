@@ -128,6 +128,10 @@ export default function AIResearchPanel({
     }
   }, [result, onSaveResult, sectionId]);
 
+  // ============ DERIVE KEY STATUS ============
+  // Check if the active provider has an API key configured
+  const hasApiKey = !!(settings?.apiKeys?.[activeProvider]);
+
   // ============ RENDER ============
   return (
     <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-4">
@@ -143,16 +147,33 @@ export default function AIResearchPanel({
 
         {/* Provider status indicator */}
         <div className="flex items-center gap-2">
-          {/* Green dot = provider configured, display name */}
+          {/* Green dot = key configured, yellow dot = no key */}
           <span className="inline-flex items-center gap-1.5 text-xs">
             <span
-              className="w-2 h-2 rounded-full bg-[#34d399]"
-              title={`${providerDisplayName} active`}
+              className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-[#34d399]' : 'bg-[#f59e0b]'}`}
+              title={hasApiKey ? `${providerDisplayName} active` : `${providerDisplayName} — no API key`}
             />
             <span className="text-[#9ca0b0]">{providerDisplayName}</span>
           </span>
         </div>
       </div>
+
+      {/* ============ API KEY WARNING ============ */}
+      {/* Show a helpful banner when no API key is configured */}
+      {!hasApiKey && (
+        <div className="mb-3 px-3 py-2.5 bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded-md">
+          <p className="text-[#f59e0b] text-xs font-medium">
+            ⚠ No API key for {providerDisplayName}
+          </p>
+          <p className="text-[#f59e0b]/70 text-[11px] mt-0.5">
+            Go to <strong>Settings</strong> → select <strong>{providerDisplayName}</strong> → enter your API key → click <strong>Save Settings</strong>.
+            {activeProvider === 'perplexity' && ' Get a key at perplexity.ai/settings/api'}
+            {activeProvider === 'anthropic' && ' Get a key at console.anthropic.com/settings/keys'}
+            {activeProvider === 'openai' && ' Get a key at platform.openai.com/api-keys'}
+            {activeProvider === 'groq' && ' Get a key at console.groq.com/keys'}
+          </p>
+        </div>
+      )}
 
       {/* ============ SECTION CONTEXT ============ */}
       {/* Shows which section the AI will research */}
