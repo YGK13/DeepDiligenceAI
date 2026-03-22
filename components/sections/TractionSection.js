@@ -16,7 +16,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // TractionSection Component
 // ============================================================
-export default function TractionSection({ data, onChange, company, settings, onAiResult }) {
+export default function TractionSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the traction section
   const u = (field, val) => onChange('traction', { ...data, [field]: val });
 
@@ -29,6 +29,7 @@ export default function TractionSection({ data, onChange, company, settings, onA
         sectionLabel="Traction & Metrics"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Traction & Metrics" subtitle="Revenue, growth rates, user engagement, retention, and pipeline">

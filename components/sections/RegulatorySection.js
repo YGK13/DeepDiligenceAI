@@ -44,7 +44,7 @@ const COMPLIANCE_STATUS_OPTIONS = [
 // ============================================================
 // RegulatorySection Component
 // ============================================================
-export default function RegulatorySection({ data, onChange, company, settings, onAiResult }) {
+export default function RegulatorySection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the regulatory section
   const u = (field, val) => onChange('regulatory', { ...data, [field]: val });
 
@@ -57,6 +57,7 @@ export default function RegulatorySection({ data, onChange, company, settings, o
         sectionLabel="Regulatory & Compliance"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Regulatory & Compliance" subtitle="FDA status, data privacy compliance, and regulatory risk assessment">

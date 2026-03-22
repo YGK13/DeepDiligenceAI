@@ -39,7 +39,7 @@ const FTO_OPTIONS = [
 // ============================================================
 // IPSection Component
 // ============================================================
-export default function IPSection({ data, onChange, company, settings, onAiResult }) {
+export default function IPSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the IP section
   const u = (field, val) => onChange('ip', { ...data, [field]: val });
 
@@ -52,6 +52,7 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
         sectionLabel="Intellectual Property"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Intellectual Property" subtitle="Patents, trade secrets, proprietary data, and IP risks">

@@ -32,7 +32,7 @@ const SWITCHING_COSTS_OPTIONS = [
 // ============================================================
 // CompetitiveSection Component
 // ============================================================
-export default function CompetitiveSection({ data, onChange, company, settings, onAiResult }) {
+export default function CompetitiveSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the competitive section
   const u = (field, val) => onChange('competitive', { ...data, [field]: val });
 
@@ -45,6 +45,7 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
         sectionLabel="Competitive Landscape"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Competitive Landscape" subtitle="Direct and indirect competitors, win rates, positioning, and moat">

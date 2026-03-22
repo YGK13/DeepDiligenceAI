@@ -220,6 +220,99 @@ export default function HomePage() {
   );
 
   // ============================================================
+  // AI AUTO-FILL HANDLER
+  // Takes structured JSON from the autofill API and merges it
+  // into the section's existing data. Only overwrites fields that
+  // the AI returned non-empty values for — preserves user edits.
+  // ============================================================
+  const handleAutoFill = useCallback(
+    (sectionId, aiData) => {
+      if (!activeCompanyId || !aiData) return;
+
+      // Get the current section data
+      const currentData = company?.[sectionId] || {};
+
+      // Merge AI data into current data — only overwrite empty fields
+      // or fields that the user hasn't manually edited.
+      // AI returns "" for unknown fields, so we skip those.
+      const merged = { ...currentData };
+      for (const [key, value] of Object.entries(aiData)) {
+        if (value !== '' && value !== null && value !== undefined) {
+          // Overwrite the field with AI data (even if user had something there)
+          // because the user explicitly clicked "Auto-Fill"
+          merged[key] = value;
+        }
+      }
+
+      // Update the company section with merged data
+      handleSectionChange(sectionId, merged);
+    },
+    [activeCompanyId, company, handleSectionChange]
+  );
+
+  // ============================================================
+  // RESEARCH ALL SECTIONS HANDLER
+  // Calls the autofill API with section='all' and populates
+  // every section in one shot. Used by the Dashboard view.
+  // ============================================================
+  const handleResearchAll = useCallback(
+    async () => {
+      if (!activeCompanyId || !company) return;
+
+      const companyName = company.overview?.companyName || company.overview?.name || company.name || '';
+      const companyUrl = company.overview?.websiteUrl || company.overview?.url || '';
+
+      if (!companyName) {
+        alert('Enter a company name in the Overview section first.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/ai/autofill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName,
+            companyUrl,
+            section: 'all',
+            provider: settings?.provider,
+            model: settings?.models?.[settings?.provider] || '',
+            apiKeys: settings?.apiKeys || {},
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Auto-fill failed');
+        }
+
+        // result.data is { overview: {...}, team: {...}, product: {...}, ... }
+        // Merge each section's AI data into the company
+        let totalFilled = 0;
+        for (const [sectionKey, sectionData] of Object.entries(result.data)) {
+          if (sectionData && typeof sectionData === 'object') {
+            const currentData = company[sectionKey] || {};
+            const merged = { ...currentData };
+            for (const [key, value] of Object.entries(sectionData)) {
+              if (value !== '' && value !== null && value !== undefined) {
+                merged[key] = value;
+                totalFilled++;
+              }
+            }
+            handleSectionChange(sectionKey, merged);
+          }
+        }
+
+        return { success: true, totalFilled };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    },
+    [activeCompanyId, company, settings, handleSectionChange]
+  );
+
+  // ============================================================
   // SETTINGS HANDLER
   // ============================================================
   const handleSaveSettings = useCallback(
@@ -303,7 +396,7 @@ export default function HomePage() {
 
     // Special views (not section editors)
     if (activeTab === 'dashboard') {
-      return <DashboardView company={company} />;
+      return <DashboardView company={company} onResearchAll={handleResearchAll} />;
     }
     if (activeTab === 'report') {
       return <ReportView company={company} />;
@@ -332,6 +425,7 @@ export default function HomePage() {
           company={company}
           settings={settings}
           onAiResult={handleAiResult}
+          onAutoFill={handleAutoFill}
         />
       );
     }

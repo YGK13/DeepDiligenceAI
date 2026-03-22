@@ -14,7 +14,7 @@
 //             e.g., company.team, company.product, company.market, etc.
 // ============================================================================
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   calculateOverallScore,
   getScoreColor,
@@ -55,7 +55,24 @@ function getScoreHex(score) {
 }
 
 // ============ COMPONENT ============
-export default function DashboardView({ company }) {
+export default function DashboardView({ company, onResearchAll }) {
+  // ============ RESEARCH ALL STATE ============
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchResult, setResearchResult] = useState(null);
+
+  const handleResearchAll = useCallback(async () => {
+    if (!onResearchAll) return;
+    setIsResearching(true);
+    setResearchResult(null);
+    try {
+      const result = await onResearchAll();
+      setResearchResult(result);
+    } catch (err) {
+      setResearchResult({ success: false, error: err.message });
+    } finally {
+      setIsResearching(false);
+    }
+  }, [onResearchAll]);
   // ============ CALCULATE OVERALL SCORE ============
   // The scoring function reads from company[sectionKey][field] per SCORE_WEIGHTS
   const overallScore = useMemo(
@@ -121,7 +138,74 @@ export default function DashboardView({ company }) {
 
   return (
     <div className="space-y-6">
-      {/* ============ SECTION 0: KEY METRICS ROW ============ */}
+      {/* ============ SECTION 0: AI RESEARCH BANNER ============ */}
+      {/* The primary CTA — one click to research and fill ALL sections */}
+      {onResearchAll && (
+        <div className="bg-gradient-to-r from-[#4a7dff]/10 to-[#34d399]/10 border border-[#4a7dff]/30 rounded-lg p-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="text-[#e8e9ed] text-base font-bold flex items-center gap-2">
+                <span>🤖</span> AI-Powered Due Diligence
+              </h3>
+              <p className="text-[#9ca0b0] text-xs mt-1">
+                One click to research this company and auto-fill all 15 sections with real data from the web.
+              </p>
+            </div>
+            <button
+              onClick={handleResearchAll}
+              disabled={isResearching}
+              className={
+                'inline-flex items-center justify-center gap-2 ' +
+                'font-bold rounded-lg border border-transparent ' +
+                'py-3 px-6 text-sm transition-all duration-200 cursor-pointer ' +
+                (isResearching
+                  ? 'bg-[#34d399]/30 text-white/50 cursor-not-allowed'
+                  : 'bg-[#34d399] text-[#0f1117] hover:bg-[#2db886] active:bg-[#27a377] shadow-lg shadow-[#34d399]/20')
+              }
+            >
+              {isResearching ? (
+                <>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#0f1117] animate-pulse" />
+                  Researching All Sections...
+                </>
+              ) : (
+                <>⚡ Research This Company</>
+              )}
+            </button>
+          </div>
+
+          {/* Loading progress bar */}
+          {isResearching && (
+            <div className="mt-3">
+              <div className="h-1.5 w-full bg-[#252836] rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#4a7dff] to-[#34d399] rounded-full animate-pulse w-3/4" />
+              </div>
+              <p className="text-[#6b7084] text-xs mt-2 text-center">
+                AI is researching all 15 sections... This may take 30-60 seconds.
+              </p>
+            </div>
+          )}
+
+          {/* Research result feedback */}
+          {researchResult && (
+            <div className={`mt-3 px-3 py-2 rounded-md border ${
+              researchResult.success
+                ? 'bg-[#34d399]/10 border-[#34d399]/30'
+                : 'bg-[#ef4444]/10 border-[#ef4444]/30'
+            }`}>
+              <p className={`text-xs font-medium ${
+                researchResult.success ? 'text-[#34d399]' : 'text-[#ef4444]'
+              }`}>
+                {researchResult.success
+                  ? `✅ Auto-filled ${researchResult.totalFilled} fields across all sections. Review each section to adjust scores.`
+                  : `❌ ${researchResult.error}`}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ============ SECTION 0B: KEY METRICS ROW ============ */}
       {/* Quick-glance metrics strip — the most important numbers at a glance */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {keyMetrics.map((m) => (

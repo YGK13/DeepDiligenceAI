@@ -33,7 +33,7 @@ const RISK_LEVEL_OPTIONS = [
 // ============================================================
 // RisksSection Component
 // ============================================================
-export default function RisksSection({ data, onChange, company, settings, onAiResult }) {
+export default function RisksSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the risks section
   const u = (field, val) => onChange('risks', { ...data, [field]: val });
 
@@ -46,6 +46,7 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
         sectionLabel="Risk Assessment"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Risk Assessment" subtitle="Comprehensive risk evaluation, mitigants, and deal breakers">

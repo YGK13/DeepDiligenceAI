@@ -30,7 +30,7 @@ const FOUNDER_FIT_OPTIONS = [
 // ============================================================
 // TeamSection Component
 // ============================================================
-export default function TeamSection({ data, onChange, company, settings, onAiResult }) {
+export default function TeamSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the team section
   const u = (field, val) => onChange('team', { ...data, [field]: val });
 
@@ -43,6 +43,7 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
         sectionLabel="Team & Founders"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Team & Founders" subtitle="Founding team backgrounds, key hires, advisors, and board composition">

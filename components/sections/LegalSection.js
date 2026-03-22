@@ -18,7 +18,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // LegalSection Component
 // ============================================================
-export default function LegalSection({ data, onChange, company, settings, onAiResult }) {
+export default function LegalSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the legal section
   const u = (field, val) => onChange('legal', { ...data, [field]: val });
 
@@ -31,6 +31,7 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
         sectionLabel="Legal Structure"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Legal Structure" subtitle="Corporate structure, litigation, IP assignments, contracts, and legal risks">

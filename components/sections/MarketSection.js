@@ -31,7 +31,7 @@ const MARKET_TIMING_OPTIONS = [
 // ============================================================
 // MarketSection Component
 // ============================================================
-export default function MarketSection({ data, onChange, company, settings, onAiResult }) {
+export default function MarketSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field in the market section
   const u = (field, val) => onChange('market', { ...data, [field]: val });
 
@@ -44,6 +44,7 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
         sectionLabel="Market Opportunity"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       <Card title="Market Opportunity" subtitle="TAM/SAM/SOM, growth rates, timing, and market dynamics">

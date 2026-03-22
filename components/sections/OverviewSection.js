@@ -71,7 +71,7 @@ const DEAL_SOURCE_OPTIONS = [
 //   settings   — app settings (API keys, preferences) passed to AI panel
 //   onAiResult — callback when AI research returns data for this section
 // ============================================================
-export default function OverviewSection({ data, onChange, company, settings, onAiResult }) {
+export default function OverviewSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
   // Helper to update a single field within the overview section data
   // Merges the new field value into the existing data object
   const u = (field, val) => onChange('overview', { ...data, [field]: val });
@@ -88,6 +88,7 @@ export default function OverviewSection({ data, onChange, company, settings, onA
         sectionLabel="Company Overview"
         settings={settings}
         onSaveResult={onAiResult}
+        onAutoFill={onAutoFill}
       />
 
       {/* --------------------------------------------------------
