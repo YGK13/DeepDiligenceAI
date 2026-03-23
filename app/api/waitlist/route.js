@@ -1,59 +1,49 @@
 // ============================================================================
 // /api/waitlist — Email Capture Endpoint for Landing Page
 // ============================================================================
-// Receives email submissions from the landing page CTA and stores them.
-// Currently stores in a JSON file (no external DB dependency for MVP).
-// Will migrate to Supabase `waitlist` table once auth is integrated.
+// Receives email submissions from the landing page CTA.
 //
-// POST /api/waitlist
-// Body: { email: string }
-// Returns: { success: true } or { success: false, error: string }
+// STORAGE STRATEGY:
+//   - When Supabase is configured: inserts into `waitlist` table
+//   - Fallback: logs to server console (visible in Vercel Logs)
+//
+// POST /api/waitlist  { email: string }
+// GET  /api/waitlist  → { count: number }
 // ============================================================================
 
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 
-// ============ STORAGE CONFIG ============
-// In production, this will be a Supabase table.
-// For now, we use a simple JSON file in the project root.
-// This file is gitignored to protect subscriber data.
-const WAITLIST_FILE = path.join(process.cwd(), 'data', 'waitlist.json');
-
-// ============ HELPERS ============
-
-// Simple email validation regex — catches most obvious typos
-// Not RFC 5322 compliant but good enough for a waitlist
+// ============ EMAIL VALIDATION ============
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Read existing waitlist entries from disk
-async function readWaitlist() {
+// ============ SUPABASE CHECK ============
+// Only attempt Supabase if env vars are configured
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+
+  // Dynamic import to avoid breaking when Supabase isn't installed
   try {
-    const raw = await fs.readFile(WAITLIST_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const { createClient } = require('@supabase/supabase-js');
+    return createClient(url, key);
   } catch {
-    // File doesn't exist yet or is corrupted — start fresh
-    return [];
+    return null;
   }
 }
 
-// Write waitlist entries to disk (creates data/ dir if needed)
-async function writeWaitlist(entries) {
-  const dir = path.dirname(WAITLIST_FILE);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(WAITLIST_FILE, JSON.stringify(entries, null, 2), 'utf-8');
-}
+// ============ IN-MEMORY FALLBACK ============
+// For when Supabase isn't configured. Entries persist until function cold-starts.
+// All entries are also logged to console (visible in Vercel Logs dashboard).
+const memoryStore = [];
 
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
-    // Parse the request body
     const body = await request.json();
     const { email } = body;
 
     // ============ VALIDATION ============
-
-    // Email is required
     if (!email || typeof email !== 'string') {
       return NextResponse.json(
         { success: false, error: 'Email is required.' },
@@ -61,10 +51,8 @@ export async function POST(request) {
       );
     }
 
-    // Trim and lowercase for consistency
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Validate email format
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       return NextResponse.json(
         { success: false, error: 'Please enter a valid email address.' },
@@ -73,33 +61,41 @@ export async function POST(request) {
     }
 
     // ============ STORE THE EMAIL ============
+    const entry = {
+      email: normalizedEmail,
+      joined_at: new Date().toISOString(),
+      source: 'landing_page',
+    };
 
-    // Read existing entries
-    const entries = await readWaitlist();
+    const supabase = getSupabaseClient();
 
-    // Check for duplicates — don't add the same email twice
-    const alreadyExists = entries.some((e) => e.email === normalizedEmail);
-    if (alreadyExists) {
-      // Return success anyway — don't reveal whether email is already registered
-      // This prevents email enumeration attacks
-      return NextResponse.json({ success: true });
+    if (supabase) {
+      // Supabase mode — insert into waitlist table
+      // Upsert to handle duplicates gracefully (email is unique)
+      const { error } = await supabase
+        .from('waitlist')
+        .upsert(entry, { onConflict: 'email', ignoreDuplicates: true });
+
+      if (error) {
+        console.error('[WAITLIST] Supabase insert error:', error);
+        // Fall through to memory store as backup
+        memoryStore.push(entry);
+      }
+    } else {
+      // No Supabase — use memory store + console log
+      // Console logs are visible in Vercel Logs dashboard
+      const isDuplicate = memoryStore.some((e) => e.email === normalizedEmail);
+      if (!isDuplicate) {
+        memoryStore.push(entry);
+      }
     }
 
-    // Add the new entry with timestamp and source metadata
-    entries.push({
-      email: normalizedEmail,
-      joinedAt: new Date().toISOString(),
-      source: 'landing_page',
-      // IP and user-agent for analytics (not stored in production without consent)
-    });
+    // Always log to console for Vercel Logs visibility
+    console.log('[WAITLIST] New signup:', normalizedEmail);
 
-    // Persist to disk
-    await writeWaitlist(entries);
-
-    // ============ SUCCESS RESPONSE ============
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Waitlist API error:', err);
+    console.error('[WAITLIST] Error:', err);
     return NextResponse.json(
       { success: false, error: 'Something went wrong. Please try again.' },
       { status: 500 }
@@ -108,17 +104,28 @@ export async function POST(request) {
 }
 
 // ============ GET HANDLER ============
-// Returns waitlist count (not emails) for admin dashboard
-// In production, this would be behind auth middleware
+// Returns waitlist count (for admin use)
 export async function GET() {
   try {
-    const entries = await readWaitlist();
+    const supabase = getSupabaseClient();
+
+    if (supabase) {
+      const { count, error } = await supabase
+        .from('waitlist')
+        .select('*', { count: 'exact', head: true });
+
+      if (!error) {
+        return NextResponse.json({ success: true, count: count || 0 });
+      }
+    }
+
+    // Fallback to memory store count
     return NextResponse.json({
       success: true,
-      count: entries.length,
+      count: memoryStore.length,
     });
   } catch (err) {
-    console.error('Waitlist GET error:', err);
+    console.error('[WAITLIST] GET error:', err);
     return NextResponse.json(
       { success: false, error: 'Failed to read waitlist.' },
       { status: 500 }
