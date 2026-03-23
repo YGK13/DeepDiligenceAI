@@ -1,5 +1,5 @@
 // ============================================================================
-// Next.js Middleware — DeepDiligence AI
+// Next.js Middleware — DueDrill
 // ============================================================================
 // This middleware runs on EVERY matched request before the page loads.
 // Its sole job right now is to refresh the Supabase auth session so that

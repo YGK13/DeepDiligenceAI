@@ -1,7 +1,7 @@
 'use client'
 
 // ============================================================================
-// Signup Page — DeepDiligence AI
+// Signup Page — DueDrill
 // ============================================================================
 // Provides email/password registration and Google OAuth sign-up.
 // After email signup, displays a confirmation message instructing the user

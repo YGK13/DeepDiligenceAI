@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================================
-// components/layout/Sidebar.js — Left sidebar navigation for DeepDiligence AI
+// components/layout/Sidebar.js — Left sidebar navigation for DueDrill
 // ============================================================================
 // Renders the full-height sidebar with:
 //   - App branding header
@@ -43,13 +43,13 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
       {/* ============ HEADER / BRANDING ============ */}
       <div className="px-3 md:px-5 pt-5 pb-4 border-b border-[#2d3148]">
         <h1 className="hidden md:block text-[#4a7dff] font-bold text-lg leading-tight">
-          DeepDiligence AI
+          DueDrill
         </h1>
         <span className="block md:hidden text-[#4a7dff] font-bold text-lg text-center">
           DD
         </span>
         <p className="hidden md:block text-[#6b7084] text-xs mt-1">
-          VC Due Diligence Platform
+          AI-Powered Due Diligence for Smarter Investments
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
       {/* ============ FOOTER ============ */}
       <div className="px-3 md:px-5 py-3 border-t border-[#2d3148]">
         <p className="hidden md:block text-[#6b7084] text-[10px] text-center">
-          v1.0.0 — DeepDiligence AI
+          v1.0.0 — DueDrill
         </p>
       </div>
     </aside>

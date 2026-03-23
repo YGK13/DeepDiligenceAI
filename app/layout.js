@@ -8,7 +8,7 @@ import './globals.css';
 // METADATA — SEO, social sharing, browser tab info
 // ============================================================
 export const metadata = {
-  title: 'DeepDiligence AI — VC Due Diligence Platform',
+  title: 'DueDrill — AI-Powered Due Diligence for Smarter Investments',
   description:
     'AI-powered startup due diligence platform for angel investors, VCs, and fund managers. 16 comprehensive DD categories, weighted scoring, multi-provider AI research.',
   keywords: [

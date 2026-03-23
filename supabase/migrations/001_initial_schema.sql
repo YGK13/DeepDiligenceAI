@@ -1,8 +1,8 @@
 -- ============================================================================
--- DeepDiligence AI — Initial Database Schema
+-- DueDrill — Initial Database Schema
 -- Migration: 001_initial_schema.sql
 -- ============================================================================
--- This migration sets up the core tables for DeepDiligence AI's Supabase
+-- This migration sets up the core tables for DueDrill's Supabase
 -- backend, replacing the current localStorage persistence layer.
 --
 -- Tables created:

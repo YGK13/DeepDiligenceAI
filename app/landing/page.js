@@ -1,9 +1,9 @@
 'use client';
 
 // ============================================================================
-// app/landing/page.js — DeepDiligence AI Marketing Landing Page
+// app/landing/page.js — DueDrill Marketing Landing Page
 // ============================================================================
-// Public-facing marketing page for the DeepDiligence AI platform.
+// Public-facing marketing page for the DueDrill platform.
 // Designed to convert visitors into users/customers.
 // ============================================================================
 
@@ -102,7 +102,7 @@ const PRICING = [
 // ============ TESTIMONIAL DATA ============
 const TESTIMONIALS = [
   {
-    quote: 'DeepDiligence AI cut our DD process from 3 weeks to 3 days. The AI research feature alone is worth 10x the price.',
+    quote: 'DueDrill cut our DD process from 3 weeks to 3 days. The AI research feature alone is worth 10x the price.',
     name: 'Managing Partner',
     role: 'Series A Fund, NYC',
   },
@@ -158,8 +158,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0f1117]/90 backdrop-blur-md border-b border-[#2d3148]/50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[#4a7dff] font-bold text-xl">DeepDiligence</span>
-            <span className="text-[#6b7084] font-light text-xl">AI</span>
+            <span className="text-[#4a7dff] font-bold text-xl">DueDrill</span>
           </div>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">Features</a>
@@ -180,7 +179,7 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#4a7dff]/10 border border-[#4a7dff]/30 mb-8">
             <span className="w-2 h-2 rounded-full bg-[#34d399] animate-pulse" />
-            <span className="text-[#9ca0b0] text-xs font-medium">AI-Powered Due Diligence Platform</span>
+            <span className="text-[#9ca0b0] text-xs font-medium">AI-Powered Due Diligence for Smarter Investments</span>
           </div>
 
           {/* Headline */}
@@ -453,11 +452,10 @@ export default function LandingPage() {
       <footer className="py-10 px-6 border-t border-[#2d3148]">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-[#4a7dff] font-bold">DeepDiligence</span>
-            <span className="text-[#6b7084] font-light">AI</span>
+            <span className="text-[#4a7dff] font-bold">DueDrill</span>
           </div>
           <p className="text-[#6b7084] text-xs">
-            &copy; {new Date().getFullYear()} DeepDiligence AI. All rights reserved.
+            &copy; {new Date().getFullYear()} DueDrill. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>

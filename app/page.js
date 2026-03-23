@@ -1,6 +1,6 @@
 'use client';
 // ============================================================
-// DeepDiligence AI — Main Application Page
+// DueDrill — Main Application Page
 // ============================================================
 // Orchestrates state management, routing between views,
 // company CRUD, and settings persistence.
@@ -378,7 +378,7 @@ export default function HomePage() {
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--accent-blue)' }}>
-            Welcome to DeepDiligence AI
+            Welcome to DueDrill
           </h2>
           <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
             AI-powered startup due diligence for smarter investment decisions.
@@ -445,7 +445,7 @@ export default function HomePage() {
       >
         <div className="text-center">
           <div className="text-4xl mb-4 ai-loading">🔍</div>
-          <p style={{ color: 'var(--text-secondary)' }}>Loading DeepDiligence AI...</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading DueDrill...</p>
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 'use client'
 
 // ============================================================================
-// Login Page — DeepDiligence AI
+// Login Page — DueDrill
 // ============================================================================
 // Provides email/password authentication and Google OAuth sign-in.
 // Uses the browser-side Supabase client for auth operations.

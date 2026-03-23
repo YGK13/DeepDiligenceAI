@@ -3,7 +3,7 @@
 // ============================================================================
 // components/ai/AIResearchPanel.js — AI-Powered Research & Auto-Fill Panel
 // ============================================================================
-// The brain of DeepDiligence AI. Two modes:
+// The brain of DueDrill. Two modes:
 //
 // 1. AUTO-FILL (primary): Calls /api/ai/autofill to research a company and
 //    return structured JSON that directly populates the section's form fields.

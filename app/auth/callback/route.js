@@ -1,5 +1,5 @@
 // ============================================================================
-// Auth Callback Route — DeepDiligence AI
+// Auth Callback Route — DueDrill
 // ============================================================================
 // This server-side route handler processes OAuth redirects and email
 // confirmation callbacks from Supabase. It sits at /auth/callback.

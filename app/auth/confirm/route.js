@@ -1,5 +1,5 @@
 // ============================================================================
-// Email Confirmation Route — DeepDiligence AI
+// Email Confirmation Route — DueDrill
 // ============================================================================
 // Handles email verification links for signup confirmation and password
 // recovery. Supabase sends these links with a token_hash and type parameter.

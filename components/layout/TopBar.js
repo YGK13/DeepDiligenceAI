@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================================
-// components/layout/TopBar.js — Top bar for DeepDiligence AI
+// components/layout/TopBar.js — Top bar for DueDrill
 // ============================================================================
 // Horizontal bar sitting above the main content area. Contains:
 //   - Left side:  Company selector dropdown + "New Company" button

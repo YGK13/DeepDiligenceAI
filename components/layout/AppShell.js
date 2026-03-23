@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================================
-// components/layout/AppShell.js — Main layout wrapper for DeepDiligence AI
+// components/layout/AppShell.js — Main layout wrapper for DueDrill
 // ============================================================================
 // Composes Sidebar + TopBar + scrollable content area into the full-viewport
 // application shell. This is the outermost layout component that every page

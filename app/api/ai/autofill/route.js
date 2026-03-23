@@ -1,7 +1,7 @@
 // ============================================================================
 // app/api/ai/autofill/route.js — AI Auto-Fill API Route
 // ============================================================================
-// The CORE engine of DeepDiligence AI. When given a company name (and
+// The CORE engine of DueDrill. When given a company name (and
 // optionally a URL), this route asks the AI provider to research the company
 // and return STRUCTURED JSON data that directly maps to the app's form fields.
 //
