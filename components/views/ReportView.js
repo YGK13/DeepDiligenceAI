@@ -449,6 +449,44 @@ export default function ReportView({ company }) {
     window.print();
   }, []);
 
+  // ============ PDF EXPORT HANDLER ============
+  // Calls the server-side /api/export/pdf route to generate a professional
+  // investment memo PDF and triggers a browser download.
+  const [isExporting, setIsExporting] = React.useState(false);
+  const handleExportPDF = useCallback(async () => {
+    if (!company) return;
+    setIsExporting(true);
+    try {
+      const response = await fetch('/api/export/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'PDF generation failed');
+      }
+
+      // Get the PDF binary and trigger a download
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = (company.overview?.companyName || company.name || 'company')
+        .replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+      a.download = `DueDrill-Memo-${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(`PDF export failed: ${err.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [company]);
+
   // ============ CHECK IF FIELD IS EMPTY / DEFAULT ============
   // Returns true for values that should be skipped in the report.
   // Skips empty strings, null, undefined. Does NOT skip numeric scores
@@ -531,6 +569,35 @@ export default function ReportView({ company }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
           </svg>
           Print Report
+        </button>
+
+        {/* Export PDF button — server-side generation */}
+        <button
+          onClick={handleExportPDF}
+          disabled={isExporting}
+          className={
+            'inline-flex items-center justify-center gap-2 ' +
+            'font-semibold rounded-lg border border-transparent ' +
+            'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
+            (isExporting
+              ? 'bg-[#34d399]/40 text-white/60 cursor-not-allowed'
+              : 'bg-[#34d399] text-[#0f1117] hover:bg-[#2db886] active:bg-[#27a377] ' +
+                'shadow-lg shadow-[#34d399]/20')
+          }
+        >
+          {isExporting ? (
+            <>
+              <span className="w-3 h-3 rounded-full border-2 border-[#0f1117] border-t-transparent animate-spin" />
+              Generating PDF...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export PDF
+            </>
+          )}
         </button>
       </div>
 
