@@ -236,8 +236,10 @@ function generateMemo(company) {
   let weightedTotal = 0;
   let totalWeight = 0;
 
-  for (const config of SCORE_WEIGHTS) {
-    const sectionData = company[config.section] || {};
+  // SCORE_WEIGHTS is an object keyed by section name, not an array.
+  // Iterate with Object.entries to get [sectionKey, config] pairs.
+  for (const [sectionKey, config] of Object.entries(SCORE_WEIGHTS)) {
+    const sectionData = company[sectionKey] || {};
     const score = parseFloat(sectionData[config.field]) || 5;
     const weight = config.weight;
     const weighted = (score * weight).toFixed(2);
@@ -245,7 +247,7 @@ function generateMemo(company) {
     totalWeight += weight;
 
     scoreRows.push([
-      config.section.charAt(0).toUpperCase() + config.section.slice(1),
+      sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1),
       score.toFixed(1),
       `${(weight * 100).toFixed(0)}%`,
       weighted,

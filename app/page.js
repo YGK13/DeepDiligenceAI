@@ -28,9 +28,11 @@ import CompanyVerificationModal from '@/components/modals/CompanyVerificationMod
 import DashboardView from '@/components/views/DashboardView';
 import ReportView from '@/components/views/ReportView';
 import ComparisonView from '@/components/views/ComparisonView';
+import PipelineView from '@/components/views/PipelineView';
 import TimelineView from '@/components/views/TimelineView';
 import ScoringModelEditor from '@/components/views/ScoringModelEditor';
 import SettingsView from '@/components/views/SettingsView';
+import ReferenceCheckView from '@/components/views/ReferenceCheckView';
 
 // ============================================================
 // SECTION COMPONENTS — all 16 DD categories
@@ -470,7 +472,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state
-    if (!company && activeTab !== 'settings') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -498,6 +500,17 @@ export default function HomePage() {
     if (activeTab === 'report') {
       return <ReportView company={company} />;
     }
+    if (activeTab === 'pipeline') {
+      return (
+        <PipelineView
+          companies={companies}
+          onCompanySelect={(id) => {
+            setActiveCompanyId(id);
+            setActiveTab('dashboard');
+          }}
+        />
+      );
+    }
     if (activeTab === 'comparison') {
       return <ComparisonView companies={companies} />;
     }
@@ -522,6 +535,9 @@ export default function HomePage() {
           }}
         />
       );
+    }
+    if (activeTab === 'references') {
+      return <ReferenceCheckView company={company} onChange={handleSectionChange} />;
     }
     if (activeTab === 'settings') {
       return (
