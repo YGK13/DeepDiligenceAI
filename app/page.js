@@ -28,6 +28,8 @@ import CompanyVerificationModal from '@/components/modals/CompanyVerificationMod
 import DashboardView from '@/components/views/DashboardView';
 import ReportView from '@/components/views/ReportView';
 import ComparisonView from '@/components/views/ComparisonView';
+import TimelineView from '@/components/views/TimelineView';
+import ScoringModelEditor from '@/components/views/ScoringModelEditor';
 import SettingsView from '@/components/views/SettingsView';
 
 // ============================================================
@@ -498,6 +500,28 @@ export default function HomePage() {
     }
     if (activeTab === 'comparison') {
       return <ComparisonView companies={companies} />;
+    }
+    if (activeTab === 'timeline') {
+      return <TimelineView company={company} onChange={handleSectionChange} />;
+    }
+    if (activeTab === 'scoring') {
+      return (
+        <ScoringModelEditor
+          company={company}
+          settings={settings}
+          onSaveModel={(model) => {
+            // Add the custom model to settings.scoringModels array
+            const existing = settings?.scoringModels || [];
+            saveSettings({ ...settings, scoringModels: [...existing, model] });
+          }}
+          onSelectModel={(modelId) => {
+            // Store the selected scoring model ID on the company
+            if (company && activeCompanyId) {
+              updateCompany(activeCompanyId, 'scoringModelId', modelId);
+            }
+          }}
+        />
+      );
     }
     if (activeTab === 'settings') {
       return (
