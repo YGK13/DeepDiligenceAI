@@ -33,7 +33,7 @@ const RISK_LEVEL_OPTIONS = [
 // ============================================================
 // RisksSection Component
 // ============================================================
-export default function RisksSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function RisksSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the risks section
   const u = (field, val) => onChange('risks', { ...data, [field]: val });
 
@@ -60,7 +60,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             value={data.overallRiskLevel || ''}
             onChange={(e) => u('overallRiskLevel', e.target.value)}
             options={RISK_LEVEL_OPTIONS}
-          />
+          confidence={confidenceData.overallRiskLevel}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -75,7 +76,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="1. Risk one&#10;2. Risk two&#10;3. Risk three&#10;4. Risk four&#10;5. Risk five"
             rows={4}
-          />
+          confidence={confidenceData.keyRisksTop5}
+            />
 
           {/* Technical Risks — technology and engineering risks */}
           <FormField
@@ -85,7 +87,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Scalability concerns, technical debt, key person dependency..."
             rows={3}
-          />
+          confidence={confidenceData.technicalRisks}
+            />
 
           {/* Market Risks — risks from market dynamics and timing */}
           <FormField
@@ -95,7 +98,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Market timing, competitive pressure, macro headwinds..."
             rows={3}
-          />
+          confidence={confidenceData.marketRisks}
+            />
 
           {/* Execution Risks — risks from team and operational challenges */}
           <FormField
@@ -105,7 +109,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Hiring challenges, geographic expansion, product delivery..."
             rows={3}
-          />
+          confidence={confidenceData.executionRisks}
+            />
 
           {/* Financial Risks — risks from financial position and projections */}
           <FormField
@@ -115,7 +120,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Runway concerns, burn rate, revenue concentration..."
             rows={3}
-          />
+          confidence={confidenceData.financialRisks}
+            />
 
           {/* Regulatory Risks — risks from regulatory environment */}
           <FormField
@@ -125,7 +131,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="FDA timeline, compliance requirements, regulatory changes..."
             rows={3}
-          />
+          confidence={confidenceData.regulatoryRisks}
+            />
 
           {/* Competitive Risks — risks from competitive landscape */}
           <FormField
@@ -135,7 +142,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Well-funded competitors, market incumbents, tech giants..."
             rows={3}
-          />
+          confidence={confidenceData.competitiveRisks}
+            />
 
           {/* Team Risks — risks related to the team */}
           <FormField
@@ -145,7 +153,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Key person risk, founder dynamics, hiring challenges..."
             rows={3}
-          />
+          confidence={confidenceData.teamRisks}
+            />
 
           {/* Risk Mitigants — factors that reduce identified risks */}
           <FormField
@@ -155,7 +164,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Protective provisions, milestone-based funding, board controls..."
             rows={3}
-          />
+          confidence={confidenceData.riskMitigants}
+            />
 
           {/* Deal Breakers — issues that would kill the deal */}
           <FormField
@@ -165,7 +175,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Non-negotiable issues: fraud, litigation, IP disputes, cap table..."
             rows={3}
-          />
+          confidence={confidenceData.dealBreakers}
+            />
 
           {/* Risk Score — 0-10 overall risk assessment (higher = less risky) */}
           <FormField
@@ -173,7 +184,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             value={data.riskScore || 0}
             onChange={(e) => u('riskScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.riskScore}
+            />
 
           {/* Risk Notes — freeform observations */}
           <FormField
@@ -183,7 +195,8 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Additional risk observations and analysis..."
             rows={3}
-          />
+          confidence={confidenceData.riskNotes}
+            />
         </div>
       </Card>
     </div>

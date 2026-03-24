@@ -50,7 +50,7 @@ const PRORATA_OPTIONS = [
 // ============================================================
 // InvestorsSection Component
 // ============================================================
-export default function InvestorsSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function InvestorsSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the investors section
   const u = (field, val) => onChange('investors', { ...data, [field]: val });
 
@@ -77,7 +77,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             value={data.leadInvestor || ''}
             onChange={(e) => u('leadInvestor', e.target.value)}
             placeholder="Sequoia, OurCrowd, JVP..."
-          />
+          confidence={confidenceData.leadInvestor}
+            />
 
           {/* Investor Reputation — tier classification */}
           <FormField
@@ -85,7 +86,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             value={data.investorReputation || ''}
             onChange={(e) => u('investorReputation', e.target.value)}
             options={REPUTATION_OPTIONS}
-          />
+          confidence={confidenceData.investorReputation}
+            />
 
           {/* Follow-on Likelihood — will they invest again? */}
           <FormField
@@ -93,7 +95,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             value={data.followOnLikelihood || ''}
             onChange={(e) => u('followOnLikelihood', e.target.value)}
             options={FOLLOWON_OPTIONS}
-          />
+          confidence={confidenceData.followOnLikelihood}
+            />
 
           {/* Pro-Rata Rights — who can maintain their ownership stake */}
           <FormField
@@ -101,7 +104,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             value={data.proRataRights || ''}
             onChange={(e) => u('proRataRights', e.target.value)}
             options={PRORATA_OPTIONS}
-          />
+          confidence={confidenceData.proRataRights}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -116,7 +120,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="List all investors by round: Seed: X, Y; Series A: Z..."
             rows={4}
-          />
+          confidence={confidenceData.allInvestors}
+            />
 
           {/* Board Composition — current board members and their affiliations */}
           <FormField
@@ -126,7 +131,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Founder seats, investor seats, independent directors..."
             rows={3}
-          />
+          confidence={confidenceData.boardComposition}
+            />
 
           {/* Investor Conflicts — potential conflicts of interest */}
           <FormField
@@ -136,7 +142,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Competing portfolio companies, board conflicts..."
             rows={3}
-          />
+          confidence={confidenceData.investorConflicts}
+            />
 
           {/* Investor Strategic Value — what value investors bring beyond capital */}
           <FormField
@@ -146,7 +153,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Domain expertise, customer intros, hiring network, follow-on..."
             rows={3}
-          />
+          confidence={confidenceData.investorStrategicValue}
+            />
 
           {/* Investor Score — 0-10 overall investor assessment */}
           <FormField
@@ -154,7 +162,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             value={data.investorScore || 0}
             onChange={(e) => u('investorScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.investorScore}
+            />
 
           {/* Investor Notes — freeform observations */}
           <FormField
@@ -164,7 +173,8 @@ export default function InvestorsSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Additional investor and syndicate observations..."
             rows={3}
-          />
+          confidence={confidenceData.investorNotes}
+            />
         </div>
       </Card>
     </div>

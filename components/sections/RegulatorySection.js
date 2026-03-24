@@ -44,7 +44,7 @@ const COMPLIANCE_STATUS_OPTIONS = [
 // ============================================================
 // RegulatorySection Component
 // ============================================================
-export default function RegulatorySection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function RegulatorySection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the regulatory section
   const u = (field, val) => onChange('regulatory', { ...data, [field]: val });
 
@@ -71,7 +71,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.fdaStatus || ''}
             onChange={(e) => u('fdaStatus', e.target.value)}
             options={FDA_STATUS_OPTIONS}
-          />
+          confidence={confidenceData.fdaStatus}
+            />
 
           {/* FDA Pathway — specific FDA pathway being pursued */}
           <FormField
@@ -79,7 +80,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.fdaPathway || ''}
             onChange={(e) => u('fdaPathway', e.target.value)}
             placeholder="510(k), PMA, De Novo..."
-          />
+          confidence={confidenceData.fdaPathway}
+            />
 
           {/* FDA Timeline — expected timeline for FDA clearance/approval */}
           <FormField
@@ -87,7 +89,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.fdaTimeline || ''}
             onChange={(e) => u('fdaTimeline', e.target.value)}
             placeholder="Q2 2027"
-          />
+          confidence={confidenceData.fdaTimeline}
+            />
 
           {/* HIPAA Compliance — health data privacy compliance */}
           <FormField
@@ -95,7 +98,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.hipaaCompliance || ''}
             onChange={(e) => u('hipaaCompliance', e.target.value)}
             options={COMPLIANCE_STATUS_OPTIONS}
-          />
+          confidence={confidenceData.hipaaCompliance}
+            />
 
           {/* GDPR Compliance — EU data privacy compliance */}
           <FormField
@@ -103,7 +107,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.gdprCompliance || ''}
             onChange={(e) => u('gdprCompliance', e.target.value)}
             options={COMPLIANCE_STATUS_OPTIONS}
-          />
+          confidence={confidenceData.gdprCompliance}
+            />
 
           {/* SOC 2 Compliance — security and availability controls */}
           <FormField
@@ -111,7 +116,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.soc2Compliance || ''}
             onChange={(e) => u('soc2Compliance', e.target.value)}
             options={COMPLIANCE_STATUS_OPTIONS}
-          />
+          confidence={confidenceData.soc2Compliance}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -126,7 +132,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             type="textarea"
             placeholder="CE Mark, ISO 13485, state licenses, other certifications..."
             rows={3}
-          />
+          confidence={confidenceData.otherRegulatoryApprovals}
+            />
 
           {/* Compliance Frameworks — standards and frameworks adopted */}
           <FormField
@@ -136,7 +143,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             type="textarea"
             placeholder="HITRUST, ISO 27001, NIST, FedRAMP..."
             rows={3}
-          />
+          confidence={confidenceData.complianceFrameworks}
+            />
 
           {/* Regulatory Risks — risks from regulatory changes or failures */}
           <FormField
@@ -146,7 +154,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             type="textarea"
             placeholder="Pending regulation changes, enforcement actions, compliance gaps..."
             rows={3}
-          />
+          confidence={confidenceData.regulatoryRisks}
+            />
 
           {/* Regulatory Burden Assessment — cost and complexity of compliance */}
           <FormField
@@ -156,7 +165,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             type="textarea"
             placeholder="Ongoing compliance costs, team needed, timeline impact..."
             rows={3}
-          />
+          confidence={confidenceData.regulatoryBurdenAssessment}
+            />
 
           {/* Regulatory Score — 0-10 overall regulatory assessment */}
           <FormField
@@ -164,7 +174,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             value={data.regulatoryScore || 0}
             onChange={(e) => u('regulatoryScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.regulatoryScore}
+            />
 
           {/* Regulatory Notes — freeform observations */}
           <FormField
@@ -174,7 +185,8 @@ export default function RegulatorySection({ data, onChange, company, settings, o
             type="textarea"
             placeholder="Additional regulatory and compliance observations..."
             rows={3}
-          />
+          confidence={confidenceData.regulatoryNotes}
+            />
         </div>
       </Card>
     </div>

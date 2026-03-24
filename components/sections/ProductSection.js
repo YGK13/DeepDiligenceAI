@@ -64,7 +64,7 @@ const SCALABILITY_OPTIONS = [
 // ============================================================
 // ProductSection Component
 // ============================================================
-export default function ProductSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function ProductSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the product section
   const u = (field, val) => onChange('product', { ...data, [field]: val });
 
@@ -91,7 +91,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.productStage || ''}
             onChange={(e) => u('productStage', e.target.value)}
             options={PRODUCT_STAGE_OPTIONS}
-          />
+          confidence={confidenceData.productStage}
+            />
 
           {/* Demo URL — link to live demo or sandbox */}
           <FormField
@@ -99,7 +100,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.demoUrl || ''}
             onChange={(e) => u('demoUrl', e.target.value)}
             placeholder="https://demo.acmehealth.com"
-          />
+          confidence={confidenceData.demoUrl}
+            />
 
           {/* Moat Type — primary competitive moat */}
           <FormField
@@ -107,7 +109,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.moatType || ''}
             onChange={(e) => u('moatType', e.target.value)}
             options={MOAT_TYPE_OPTIONS}
-          />
+          confidence={confidenceData.moatType}
+            />
 
           {/* AI/ML Usage — how AI is used in the product */}
           <FormField
@@ -115,7 +118,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.aiMlUsage || ''}
             onChange={(e) => u('aiMlUsage', e.target.value)}
             options={AI_ML_OPTIONS}
-          />
+          confidence={confidenceData.aiMlUsage}
+            />
 
           {/* Scalability — architecture scalability assessment */}
           <FormField
@@ -123,7 +127,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.scalability || ''}
             onChange={(e) => u('scalability', e.target.value)}
             options={SCALABILITY_OPTIONS}
-          />
+          confidence={confidenceData.scalability}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -138,7 +143,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Describe what the product does, who uses it, and how..."
             rows={4}
-          />
+          confidence={confidenceData.productDescription}
+            />
 
           {/* Tech Stack — languages, frameworks, infrastructure */}
           <FormField
@@ -148,7 +154,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="React, Node.js, Python, AWS, PostgreSQL, Redis..."
             rows={3}
-          />
+          confidence={confidenceData.techStack}
+            />
 
           {/* Moat Description — narrative explanation of defensibility */}
           <FormField
@@ -158,7 +165,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Why is this defensible? What would it take to replicate?"
             rows={3}
-          />
+          confidence={confidenceData.moatDescription}
+            />
 
           {/* Technical Differentiator — what's unique about the technology */}
           <FormField
@@ -168,7 +176,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Key technical innovations or unique approaches..."
             rows={3}
-          />
+          confidence={confidenceData.technicalDifferentiator}
+            />
 
           {/* Technical Debt — known debt and its impact */}
           <FormField
@@ -178,7 +187,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Known technical debt, legacy systems, refactoring needs..."
             rows={3}
-          />
+          confidence={confidenceData.technicalDebt}
+            />
 
           {/* Product Roadmap — planned features and milestones */}
           <FormField
@@ -188,7 +198,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Next 6-18 months: key milestones, features, releases..."
             rows={4}
-          />
+          confidence={confidenceData.productRoadmap}
+            />
 
           {/* Integrations — third-party systems the product connects to */}
           <FormField
@@ -198,7 +209,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Salesforce, Epic, Workday, Slack..."
             rows={3}
-          />
+          confidence={confidenceData.integrations}
+            />
 
           {/* Product Score — 0-10 overall product assessment */}
           <FormField
@@ -206,7 +218,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             value={data.productScore || 0}
             onChange={(e) => u('productScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.productScore}
+            />
 
           {/* Product Notes — freeform observations */}
           <FormField
@@ -216,7 +229,8 @@ export default function ProductSection({ data, onChange, company, settings, onAi
             type="textarea"
             placeholder="Additional product and technology observations..."
             rows={3}
-          />
+          confidence={confidenceData.productNotes}
+            />
         </div>
       </Card>
     </div>

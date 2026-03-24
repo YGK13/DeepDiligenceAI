@@ -136,19 +136,30 @@ function resolveProvider(requestedProvider, clientApiKeys) {
 }
 
 // ============ SYSTEM PROMPT FOR STRUCTURED OUTPUT ============
-const AUTOFILL_SYSTEM_PROMPT = `You are a world-class VC due diligence research analyst. Your job is to research a company and return STRUCTURED DATA as a JSON object.
+// Updated to request confidence metadata alongside each field value.
+// The AI now returns { "fieldKey": { "value": "...", "confidence": "verified"|"likely"|"inferred"|"unknown" } }
+// instead of plain { "fieldKey": "value" }. This lets the UI show data quality badges.
+const AUTOFILL_SYSTEM_PROMPT = `You are a world-class VC due diligence research analyst. Your job is to research a company and return STRUCTURED DATA as a JSON object WITH CONFIDENCE INDICATORS.
 
 CRITICAL RULES:
 1. Return ONLY valid JSON — no markdown, no code fences, no explanation text outside the JSON.
 2. Use the EXACT field keys specified in the request.
-3. If you cannot find data for a field, set its value to "" (empty string). NEVER make up data.
-4. For URLs, include the full URL with https://.
-5. For dollar amounts, use short format like "$15M", "$2.5B", "€500K".
-6. For percentages, include the % sign like "25%", "120%".
-7. For 'long' type fields, write 2-4 sentences with specific details, names, and numbers.
-8. For 'select' type fields, return EXACTLY one of the provided options.
-9. Be as specific and factual as possible. Cite numbers, names, dates, and data points.
-10. If the company is not well-known, do your best with publicly available information.
+3. For EACH field, return an object with "value" and "confidence" keys:
+   { "fieldKey": { "value": "the data", "confidence": "verified" } }
+4. Confidence levels (pick the most accurate one):
+   - "verified" — you found this data in 2 or more independent, authoritative sources (e.g., Crunchbase + company website + press release)
+   - "likely" — you found this in 1 reliable source but could not cross-reference
+   - "inferred" — you are making an educated guess based on indirect evidence (e.g., inferring team size from LinkedIn headcount)
+   - "unknown" — you have no reliable data; set value to "" (empty string)
+5. If you cannot find data for a field, use: { "value": "", "confidence": "unknown" }
+6. For URLs, include the full URL with https://.
+7. For dollar amounts, use short format like "$15M", "$2.5B", "€500K".
+8. For percentages, include the % sign like "25%", "120%".
+9. For 'long' type fields, write 2-4 sentences with specific details, names, and numbers.
+10. For 'select' type fields, return EXACTLY one of the provided options as the value.
+11. Be as specific and factual as possible. Cite numbers, names, dates, and data points.
+12. If the company is not well-known, do your best with publicly available information.
+13. Be HONEST about confidence — "verified" should only be used when you truly found corroborating sources.
 
 You are researching real companies using real, publicly available data. Be thorough.`;
 
@@ -164,12 +175,15 @@ function buildSectionPrompt(companyName, companyUrl, sectionKey) {
 
   return `Research the company "${companyName}"${companyUrl ? ` (${companyUrl})` : ''} and fill in the "${sectionDef.label}" section of a VC due diligence report.
 
-Return a JSON object with EXACTLY these fields:
+Return a JSON object with EXACTLY these fields. Each field value MUST be an object with "value" and "confidence" keys:
 {
 ${fieldSpecs.join(',\n')}
 }
 
-Return ONLY the JSON object, nothing else. Every field must be present. Use "" for unknown fields.`;
+Example format for each field: { "value": "actual data here", "confidence": "verified" }
+Confidence levels: "verified" (2+ sources), "likely" (1 source), "inferred" (educated guess), "unknown" (no data, value="")
+
+Return ONLY the JSON object, nothing else. Every field must be present.`;
 }
 
 // ============ BUILD AUTOFILL PROMPT FOR ALL SECTIONS ============
@@ -200,7 +214,11 @@ Return a JSON object structured as:
 Here are ALL the sections and fields to fill:
 ${JSON.stringify(allSpecs, null, 2)}
 
-Return ONLY the JSON object. Every field must be present in every section. Use "" for unknown fields. Be thorough — research everything available about this company.`;
+Each field value MUST be an object with "value" and "confidence" keys.
+Example: { "ceoName": { "value": "Patrick Collison", "confidence": "verified" } }
+Confidence levels: "verified" (2+ sources), "likely" (1 source), "inferred" (educated guess), "unknown" (no data, value="")
+
+Return ONLY the JSON object. Every field must be present in every section. Be thorough — research everything available about this company.`;
 }
 
 // ============ PARSE JSON FROM AI RESPONSE ============
@@ -238,6 +256,55 @@ function parseJsonFromResponse(text) {
   }
 
   return null;
+}
+
+// ============ EXTRACT DATA + CONFIDENCE FROM AI RESPONSE ============
+// The AI returns fields as { "fieldKey": { "value": "...", "confidence": "verified" } }.
+// This function splits that into two flat objects:
+//   data:       { fieldKey: "value", ... }         — for populating form fields (backward compatible)
+//   confidence: { fieldKey: "verified", ... }      — for rendering ConfidenceBadge in the UI
+//
+// Also handles BACKWARD COMPATIBILITY: if the AI returns a plain string instead of
+// { value, confidence }, we treat it as { value: thatString, confidence: "likely" }
+// so older/simpler providers still work without breaking.
+function extractDataAndConfidence(parsed) {
+  const data = {};
+  const confidence = {};
+
+  for (const [key, val] of Object.entries(parsed)) {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      // ---- NESTED SECTION MODE (section='all') ----
+      // Check if this looks like a section object (contains sub-fields)
+      // vs. a single field's { value, confidence } pair.
+      // A field pair always has a "value" key and a "confidence" key.
+      const hasValueKey = 'value' in val;
+      const hasConfidenceKey = 'confidence' in val;
+      const keyCount = Object.keys(val).length;
+
+      if (hasValueKey && hasConfidenceKey && keyCount === 2) {
+        // This is a single field: { value: "...", confidence: "..." }
+        data[key] = val.value;
+        confidence[key] = val.confidence;
+      } else {
+        // This is a nested section (e.g., { ceoName: {...}, ctoName: {...} })
+        // Recursively extract from each sub-section
+        const sub = extractDataAndConfidence(val);
+        data[key] = sub.data;
+        confidence[key] = sub.confidence;
+      }
+    } else {
+      // Plain string value — backward compatibility fallback
+      // Treat as "likely" confidence since the AI didn't provide metadata
+      data[key] = val;
+      if (val !== '' && val !== null && val !== undefined) {
+        confidence[key] = 'likely';
+      } else {
+        confidence[key] = 'unknown';
+      }
+    }
+  }
+
+  return { data, confidence };
 }
 
 // ============ CALL AI PROVIDER ============
@@ -357,12 +424,20 @@ export async function POST(request) {
       resultData = parsed;
     }
 
-    // ---- Return structured data ----
+    // ---- Split AI response into data (plain values) + confidence (level metadata) ----
+    // extractDataAndConfidence handles the { value, confidence } object format
+    // from the AI, and also provides backward compatibility for plain string values.
+    const { data: plainData, confidence } = extractDataAndConfidence(resultData);
+
+    // ---- Return structured data + confidence metadata ----
+    // data:       plain key→value for form field population (same shape consumers expect)
+    // confidence: key→confidence_level for rendering ConfidenceBadge in the UI
     return NextResponse.json({
       success: true,
       provider,
       section,
-      data: resultData,
+      data: plainData,
+      confidence,
     });
 
   } catch (error) {

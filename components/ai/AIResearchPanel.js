@@ -96,9 +96,11 @@ export default function AIResearchPanel({
       ).length;
       const totalCount = Object.keys(data.data || {}).length;
 
-      // Pass the structured data to the parent to update the form
+      // Pass the structured data AND confidence metadata to the parent.
+      // The third argument (data.confidence) contains per-field confidence levels
+      // that the parent stores and passes down to FormField → ConfidenceBadge.
       if (onAutoFill && data.data) {
-        onAutoFill(sectionId, data.data);
+        onAutoFill(sectionId, data.data, data.confidence || {});
       }
 
       setAutoFillStatus(

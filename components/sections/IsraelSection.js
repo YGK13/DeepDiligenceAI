@@ -57,7 +57,7 @@ const SECTION_102_OPTIONS = [
 // ============================================================
 // IsraelSection Component
 // ============================================================
-export default function IsraelSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function IsraelSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the Israel section
   const u = (field, val) => onChange('israel', { ...data, [field]: val });
 
@@ -84,7 +84,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.israelEntityName || ''}
             onChange={(e) => u('israelEntityName', e.target.value)}
             placeholder="Acme Health Ltd."
-          />
+          confidence={confidenceData.israelEntityName}
+            />
 
           {/* Israel Entity Type — corporate form of Israeli entity */}
           <FormField
@@ -92,7 +93,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.israelEntityType || ''}
             onChange={(e) => u('israelEntityType', e.target.value)}
             options={IL_ENTITY_OPTIONS}
-          />
+          confidence={confidenceData.israelEntityType}
+            />
 
           {/* US Entity Name — name of the US entity (if exists) */}
           <FormField
@@ -100,7 +102,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.usEntityName || ''}
             onChange={(e) => u('usEntityName', e.target.value)}
             placeholder="Acme Health Inc."
-          />
+          confidence={confidenceData.usEntityName}
+            />
 
           {/* US Entity Type — corporate form of US entity */}
           <FormField
@@ -108,7 +111,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.usEntityType || ''}
             onChange={(e) => u('usEntityType', e.target.value)}
             options={US_ENTITY_OPTIONS}
-          />
+          confidence={confidenceData.usEntityType}
+            />
 
           {/* IIA Grants — Israel Innovation Authority grant status */}
           <FormField
@@ -116,7 +120,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.iiaGrants || ''}
             onChange={(e) => u('iiaGrants', e.target.value)}
             options={IIA_OPTIONS}
-          />
+          confidence={confidenceData.iiaGrants}
+            />
 
           {/* R&D Center Location — where the R&D team is based in Israel */}
           <FormField
@@ -124,7 +129,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.rdCenterLocation || ''}
             onChange={(e) => u('rdCenterLocation', e.target.value)}
             placeholder="Tel Aviv, Haifa, Beer Sheva..."
-          />
+          confidence={confidenceData.rdCenterLocation}
+            />
 
           {/* R&D Headcount — number of R&D employees in Israel */}
           <FormField
@@ -132,7 +138,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.rdHeadcount || ''}
             onChange={(e) => u('rdHeadcount', e.target.value)}
             placeholder="25"
-          />
+          confidence={confidenceData.rdHeadcount}
+            />
 
           {/* Section 102 Options — tax-advantaged stock options under Israeli tax law */}
           <FormField
@@ -140,7 +147,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.section102Options || ''}
             onChange={(e) => u('section102Options', e.target.value)}
             options={SECTION_102_OPTIONS}
-          />
+          confidence={confidenceData.section102Options}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -155,7 +163,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Royalty obligations, IP transfer restrictions, manufacturing requirements..."
             rows={3}
-          />
+          confidence={confidenceData.iiaObligations}
+            />
 
           {/* Transfer Pricing Strategy — how intercompany transactions are priced */}
           <FormField
@@ -165,7 +174,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Cost-plus, arm's length, advance pricing agreement..."
             rows={3}
-          />
+          confidence={confidenceData.transferPricingStrategy}
+            />
 
           {/* Tax Treaty Usage — leveraging US-Israel tax treaty benefits */}
           <FormField
@@ -175,7 +185,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Withholding tax reduction, PE avoidance, treaty benefits..."
             rows={3}
-          />
+          confidence={confidenceData.taxTreatyUsage}
+            />
 
           {/* US Market Strategy — plan for entering/expanding in US market */}
           <FormField
@@ -185,7 +196,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Direct sales, partnerships, channel strategy for US market..."
             rows={3}
-          />
+          confidence={confidenceData.usMarketStrategy}
+            />
 
           {/* US Presence — existing US operations and infrastructure */}
           <FormField
@@ -195,7 +207,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="US office location, US-based employees, US customers..."
             rows={3}
-          />
+          confidence={confidenceData.usPresence}
+            />
 
           {/* Cultural Adaptation Plan — bridging Israeli and US business cultures */}
           <FormField
@@ -205,7 +218,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="US-style board governance, sales culture, customer success..."
             rows={3}
-          />
+          confidence={confidenceData.culturalAdaptationPlan}
+            />
 
           {/* US Hiring Plan — planned US hires for market expansion */}
           <FormField
@@ -215,7 +229,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="VP Sales (NYC), AEs, SDRs, CS managers..."
             rows={3}
-          />
+          confidence={confidenceData.usHiringPlan}
+            />
 
           {/* Dual Listing Consideration — potential for listing on both TASE and US exchange */}
           <FormField
@@ -225,7 +240,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="TASE dual listing plans, timeline, regulatory requirements..."
             rows={3}
-          />
+          confidence={confidenceData.dualListingConsideration}
+            />
 
           {/* Israel Score — 0-10 overall Israel-specific assessment */}
           <FormField
@@ -233,7 +249,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             value={data.israelScore || 0}
             onChange={(e) => u('israelScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.israelScore}
+            />
 
           {/* Israel Notes — freeform observations */}
           <FormField
@@ -243,7 +260,8 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Additional Israel-specific observations..."
             rows={3}
-          />
+          confidence={confidenceData.israelNotes}
+            />
         </div>
       </Card>
     </div>

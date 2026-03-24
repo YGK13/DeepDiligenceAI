@@ -16,7 +16,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // TractionSection Component
 // ============================================================
-export default function TractionSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function TractionSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the traction section
   const u = (field, val) => onChange('traction', { ...data, [field]: val });
 
@@ -44,7 +44,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.currentArr || ''}
             onChange={(e) => u('currentArr', e.target.value)}
             placeholder="$2.4M"
-          />
+          confidence={confidenceData.currentArr}
+            />
 
           {/* MRR Growth Rate — month-over-month growth percentage */}
           <FormField
@@ -52,7 +53,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.mrrGrowthRate || ''}
             onChange={(e) => u('mrrGrowthRate', e.target.value)}
             placeholder="15% MoM"
-          />
+          confidence={confidenceData.mrrGrowthRate}
+            />
 
           {/* Total Revenue LTM — last twelve months total revenue */}
           <FormField
@@ -60,7 +62,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.totalRevenueLtm || ''}
             onChange={(e) => u('totalRevenueLtm', e.target.value)}
             placeholder="$1.8M"
-          />
+          confidence={confidenceData.totalRevenueLtm}
+            />
 
           {/* YoY Revenue Growth — year-over-year revenue growth */}
           <FormField
@@ -68,7 +71,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.yoyRevenueGrowth || ''}
             onChange={(e) => u('yoyRevenueGrowth', e.target.value)}
             placeholder="240%"
-          />
+          confidence={confidenceData.yoyRevenueGrowth}
+            />
 
           {/* Total Users — all registered users */}
           <FormField
@@ -76,7 +80,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.totalUsers || ''}
             onChange={(e) => u('totalUsers', e.target.value)}
             placeholder="12,000"
-          />
+          confidence={confidenceData.totalUsers}
+            />
 
           {/* Active Users — users who have engaged recently */}
           <FormField
@@ -84,7 +89,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.activeUsers || ''}
             onChange={(e) => u('activeUsers', e.target.value)}
             placeholder="8,400"
-          />
+          confidence={confidenceData.activeUsers}
+            />
 
           {/* DAU — Daily Active Users */}
           <FormField
@@ -92,7 +98,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.dau || ''}
             onChange={(e) => u('dau', e.target.value)}
             placeholder="3,200"
-          />
+          confidence={confidenceData.dau}
+            />
 
           {/* MAU — Monthly Active Users */}
           <FormField
@@ -100,7 +107,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.mau || ''}
             onChange={(e) => u('mau', e.target.value)}
             placeholder="7,800"
-          />
+          confidence={confidenceData.mau}
+            />
 
           {/* Retention Rate — percentage of users retained over time */}
           <FormField
@@ -108,7 +116,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.retentionRate || ''}
             onChange={(e) => u('retentionRate', e.target.value)}
             placeholder="94%"
-          />
+          confidence={confidenceData.retentionRate}
+            />
 
           {/* Churn Rate — monthly customer churn */}
           <FormField
@@ -116,7 +125,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.churnRate || ''}
             onChange={(e) => u('churnRate', e.target.value)}
             placeholder="2% monthly"
-          />
+          confidence={confidenceData.churnRate}
+            />
 
           {/* Net Revenue Retention — NRR including expansion (>100% = net expansion) */}
           <FormField
@@ -124,7 +134,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.netRevenueRetention || ''}
             onChange={(e) => u('netRevenueRetention', e.target.value)}
             placeholder="125%"
-          />
+          confidence={confidenceData.netRevenueRetention}
+            />
 
           {/* NPS Score — Net Promoter Score (customer satisfaction) */}
           <FormField
@@ -132,7 +143,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.npsScore || ''}
             onChange={(e) => u('npsScore', e.target.value)}
             placeholder="72"
-          />
+          confidence={confidenceData.npsScore}
+            />
 
           {/* Pipeline Value — total value of sales pipeline */}
           <FormField
@@ -140,7 +152,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.pipelineValue || ''}
             onChange={(e) => u('pipelineValue', e.target.value)}
             placeholder="$4.2M"
-          />
+          confidence={confidenceData.pipelineValue}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -153,7 +166,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             value={data.tractionScore || 0}
             onChange={(e) => u('tractionScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.tractionScore}
+            />
 
           {/* Traction Notes — freeform observations */}
           <FormField
@@ -163,7 +177,8 @@ export default function TractionSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Additional traction observations, growth trajectory analysis..."
             rows={3}
-          />
+          confidence={confidenceData.tractionNotes}
+            />
         </div>
       </Card>
     </div>

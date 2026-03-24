@@ -39,7 +39,7 @@ const FTO_OPTIONS = [
 // ============================================================
 // IPSection Component
 // ============================================================
-export default function IPSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function IPSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the IP section
   const u = (field, val) => onChange('ip', { ...data, [field]: val });
 
@@ -66,7 +66,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.patentsFiled || ''}
             onChange={(e) => u('patentsFiled', e.target.value)}
             placeholder="3"
-          />
+          confidence={confidenceData.patentsFiled}
+            />
 
           {/* Patents Granted — patents already approved */}
           <FormField
@@ -74,7 +75,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.patentsGranted || ''}
             onChange={(e) => u('patentsGranted', e.target.value)}
             placeholder="1"
-          />
+          confidence={confidenceData.patentsGranted}
+            />
 
           {/* Patents Pending — patents awaiting approval */}
           <FormField
@@ -82,7 +84,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.patentsPending || ''}
             onChange={(e) => u('patentsPending', e.target.value)}
             placeholder="2"
-          />
+          confidence={confidenceData.patentsPending}
+            />
 
           {/* IP Jurisdiction — where patents are filed */}
           <FormField
@@ -90,7 +93,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.ipJurisdiction || ''}
             onChange={(e) => u('ipJurisdiction', e.target.value)}
             placeholder="US, IL, PCT"
-          />
+          confidence={confidenceData.ipJurisdiction}
+            />
 
           {/* IP Assignment Complete? — has all IP been properly transferred to the company */}
           <FormField
@@ -98,7 +102,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.ipAssignment || ''}
             onChange={(e) => u('ipAssignment', e.target.value)}
             options={IP_ASSIGNMENT_OPTIONS}
-          />
+          confidence={confidenceData.ipAssignment}
+            />
 
           {/* Freedom to Operate — risk assessment for third-party IP conflicts */}
           <FormField
@@ -106,7 +111,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.freedomToOperate || ''}
             onChange={(e) => u('freedomToOperate', e.target.value)}
             options={FTO_OPTIONS}
-          />
+          confidence={confidenceData.freedomToOperate}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -121,7 +127,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             type="textarea"
             placeholder="Proprietary algorithms, processes, or know-how..."
             rows={3}
-          />
+          confidence={confidenceData.tradeSecrets}
+            />
 
           {/* Proprietary Data Assets — unique datasets that create value */}
           <FormField
@@ -131,7 +138,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             type="textarea"
             placeholder="Training datasets, clinical data, user behavior data..."
             rows={3}
-          />
+          confidence={confidenceData.proprietaryDataAssets}
+            />
 
           {/* Open Source Risk — risks from OSS dependencies or licensing */}
           <FormField
@@ -141,7 +149,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             type="textarea"
             placeholder="GPL dependencies, copyleft license exposure, SBOM status..."
             rows={3}
-          />
+          confidence={confidenceData.openSourceRisk}
+            />
 
           {/* IP Score — 0-10 overall IP assessment */}
           <FormField
@@ -149,7 +158,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             value={data.ipScore || 0}
             onChange={(e) => u('ipScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.ipScore}
+            />
 
           {/* IP Notes — freeform observations */}
           <FormField
@@ -159,7 +169,8 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
             type="textarea"
             placeholder="Additional IP observations and assessment..."
             rows={3}
-          />
+          confidence={confidenceData.ipNotes}
+            />
         </div>
       </Card>
     </div>

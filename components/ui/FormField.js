@@ -10,6 +10,7 @@
 // ============================================================
 
 import React from 'react';
+import ConfidenceBadge from '@/components/ui/ConfidenceBadge';
 
 // ============================================================
 // Shared Tailwind classes for all input elements
@@ -65,6 +66,9 @@ function getScoreLabel(score) {
 //   placeholder — placeholder text for text-based inputs
 //   options     — if provided, renders a <select>; can be string[] or {value,label}[]
 //   rows        — number of rows for textarea (default 3)
+//   confidence  — optional AI confidence level ("verified"|"likely"|"inferred"|null)
+//                  When provided, renders a small ConfidenceBadge next to the label
+//                  so VCs can see data quality at a glance.
 // ============================================================
 export default function FormField({
   label,
@@ -74,6 +78,7 @@ export default function FormField({
   placeholder = '',
   options = null,
   rows = 3,
+  confidence = null,
 }) {
   // ----------------------------------------------------------
   // Render a <select> dropdown when options are provided
@@ -82,10 +87,11 @@ export default function FormField({
   if (options) {
     return (
       <div className="mb-3">
-        {/* Label */}
+        {/* Label with optional confidence badge */}
         {label && (
-          <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
+          <label className="flex items-center text-[#9ca0b0] text-xs font-medium mb-1.5">
             {label}
+            <ConfidenceBadge level={confidence} />
           </label>
         )}
 
@@ -125,8 +131,9 @@ export default function FormField({
     return (
       <div className="mb-3">
         {label && (
-          <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
+          <label className="flex items-center text-[#9ca0b0] text-xs font-medium mb-1.5">
             {label}
+            <ConfidenceBadge level={confidence} />
           </label>
         )}
         <textarea
@@ -163,8 +170,9 @@ export default function FormField({
     return (
       <div className="mb-3">
         {label && (
-          <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
+          <label className="flex items-center text-[#9ca0b0] text-xs font-medium mb-1.5">
             {label}
+            <ConfidenceBadge level={confidence} />
           </label>
         )}
 
@@ -275,8 +283,9 @@ export default function FormField({
     return (
       <div className="mb-3">
         {label && (
-          <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
+          <label className="flex items-center text-[#9ca0b0] text-xs font-medium mb-1.5">
             {label}
+            <ConfidenceBadge level={confidence} />
           </label>
         )}
         <input
@@ -298,8 +307,9 @@ export default function FormField({
   return (
     <div className="mb-3">
       {label && (
-        <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
+        <label className="flex items-center text-[#9ca0b0] text-xs font-medium mb-1.5">
           {label}
+          <ConfidenceBadge level={confidence} />
         </label>
       )}
       <input

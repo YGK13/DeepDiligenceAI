@@ -49,7 +49,7 @@ const PIPELINE_QUALITY_OPTIONS = [
 // ============================================================
 // CustomersSection Component
 // ============================================================
-export default function CustomersSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function CustomersSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the customers section
   const u = (field, val) => onChange('customers', { ...data, [field]: val });
 
@@ -76,7 +76,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             value={data.customerConcentration || ''}
             onChange={(e) => u('customerConcentration', e.target.value)}
             options={CONCENTRATION_OPTIONS}
-          />
+          confidence={confidenceData.customerConcentration}
+            />
 
           {/* Referenceable Customers — availability of customer references */}
           <FormField
@@ -84,7 +85,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             value={data.referenceableCustomers || ''}
             onChange={(e) => u('referenceableCustomers', e.target.value)}
             options={REFERENCEABLE_OPTIONS}
-          />
+          confidence={confidenceData.referenceableCustomers}
+            />
 
           {/* Pipeline Quality — caliber of companies in the sales pipeline */}
           <FormField
@@ -92,7 +94,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             value={data.pipelineQuality || ''}
             onChange={(e) => u('pipelineQuality', e.target.value)}
             options={PIPELINE_QUALITY_OPTIONS}
-          />
+          confidence={confidenceData.pipelineQuality}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -107,7 +110,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="List key customers with contract sizes and use cases..."
             rows={4}
-          />
+          confidence={confidenceData.keyCustomers}
+            />
 
           {/* Customer Logos — notable brand names using the product */}
           <FormField
@@ -117,7 +121,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Notable logos: Fortune 500, healthcare systems, etc..."
             rows={3}
-          />
+          confidence={confidenceData.customerLogos}
+            />
 
           {/* Case Studies — documented customer success stories */}
           <FormField
@@ -127,7 +132,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Customer X: 40% reduction in Y, $Z savings..."
             rows={3}
-          />
+          confidence={confidenceData.caseStudies}
+            />
 
           {/* Strategic Partnerships — partnerships that create strategic value */}
           <FormField
@@ -137,7 +143,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Technology partners, integration partners, GTM partners..."
             rows={3}
-          />
+          confidence={confidenceData.strategicPartnerships}
+            />
 
           {/* Channel Partners — distribution and reseller relationships */}
           <FormField
@@ -147,7 +154,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Resellers, system integrators, referral partners..."
             rows={3}
-          />
+          confidence={confidenceData.channelPartners}
+            />
 
           {/* Customer Score — 0-10 overall customer assessment */}
           <FormField
@@ -155,7 +163,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             value={data.customerScore || 0}
             onChange={(e) => u('customerScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.customerScore}
+            />
 
           {/* Customer Notes — freeform observations */}
           <FormField
@@ -165,7 +174,8 @@ export default function CustomersSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Additional customer and partnership observations..."
             rows={3}
-          />
+          confidence={confidenceData.customerNotes}
+            />
         </div>
       </Card>
     </div>

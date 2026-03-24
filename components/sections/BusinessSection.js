@@ -33,7 +33,7 @@ const REVENUE_MODEL_OPTIONS = [
 // ============================================================
 // BusinessSection Component
 // ============================================================
-export default function BusinessSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function BusinessSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the business section
   const u = (field, val) => onChange('business', { ...data, [field]: val });
 
@@ -60,7 +60,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.revenueModel || ''}
             onChange={(e) => u('revenueModel', e.target.value)}
             options={REVENUE_MODEL_OPTIONS}
-          />
+          confidence={confidenceData.revenueModel}
+            />
 
           {/* Pricing Model — how the product is priced */}
           <FormField
@@ -68,7 +69,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.pricingModel || ''}
             onChange={(e) => u('pricingModel', e.target.value)}
             placeholder="Per seat, per API call..."
-          />
+          confidence={confidenceData.pricingModel}
+            />
 
           {/* Avg Contract Value — average annual contract value */}
           <FormField
@@ -76,7 +78,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.avgContractValue || ''}
             onChange={(e) => u('avgContractValue', e.target.value)}
             placeholder="$48K ARR"
-          />
+          confidence={confidenceData.avgContractValue}
+            />
 
           {/* Gross Margin — revenue minus COGS as percentage */}
           <FormField
@@ -84,7 +87,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.grossMargin || ''}
             onChange={(e) => u('grossMargin', e.target.value)}
             placeholder="78%"
-          />
+          confidence={confidenceData.grossMargin}
+            />
 
           {/* LTV — Lifetime Value of a customer */}
           <FormField
@@ -92,7 +96,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.ltv || ''}
             onChange={(e) => u('ltv', e.target.value)}
             placeholder="$144K"
-          />
+          confidence={confidenceData.ltv}
+            />
 
           {/* CAC — Customer Acquisition Cost */}
           <FormField
@@ -100,7 +105,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.cac || ''}
             onChange={(e) => u('cac', e.target.value)}
             placeholder="$18K"
-          />
+          confidence={confidenceData.cac}
+            />
 
           {/* LTV:CAC Ratio — key SaaS health metric (>3:1 is healthy) */}
           <FormField
@@ -108,7 +114,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.ltvCacRatio || ''}
             onChange={(e) => u('ltvCacRatio', e.target.value)}
             placeholder="8:1"
-          />
+          confidence={confidenceData.ltvCacRatio}
+            />
 
           {/* Payback Period — months to recover CAC */}
           <FormField
@@ -116,7 +123,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.paybackPeriod || ''}
             onChange={(e) => u('paybackPeriod', e.target.value)}
             placeholder="6 months"
-          />
+          confidence={confidenceData.paybackPeriod}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -131,7 +139,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Describe upsell motions, seat expansion, usage growth..."
             rows={3}
-          />
+          confidence={confidenceData.expansionRevenue}
+            />
 
           {/* Revenue Concentration Risk — dependency on few customers */}
           <FormField
@@ -141,7 +150,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Top customer % of revenue, customer diversification..."
             rows={3}
-          />
+          confidence={confidenceData.revenueConcentrationRisk}
+            />
 
           {/* Channel Strategy — how the company reaches customers */}
           <FormField
@@ -151,7 +161,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Direct sales, partner channels, self-serve, PLG..."
             rows={3}
-          />
+          confidence={confidenceData.channelStrategy}
+            />
 
           {/* Business Model Score — 0-10 overall assessment */}
           <FormField
@@ -159,7 +170,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             value={data.businessScore || 0}
             onChange={(e) => u('businessScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.businessScore}
+            />
 
           {/* Business Model Notes — freeform observations */}
           <FormField
@@ -169,7 +181,8 @@ export default function BusinessSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Additional business model observations..."
             rows={3}
-          />
+          confidence={confidenceData.businessNotes}
+            />
         </div>
       </Card>
     </div>

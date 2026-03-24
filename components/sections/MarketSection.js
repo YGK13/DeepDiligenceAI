@@ -31,7 +31,7 @@ const MARKET_TIMING_OPTIONS = [
 // ============================================================
 // MarketSection Component
 // ============================================================
-export default function MarketSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function MarketSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the market section
   const u = (field, val) => onChange('market', { ...data, [field]: val });
 
@@ -58,7 +58,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.tam || ''}
             onChange={(e) => u('tam', e.target.value)}
             placeholder="$50B"
-          />
+          confidence={confidenceData.tam}
+            />
 
           {/* SAM — Serviceable Addressable Market */}
           <FormField
@@ -66,7 +67,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.sam || ''}
             onChange={(e) => u('sam', e.target.value)}
             placeholder="$8B"
-          />
+          confidence={confidenceData.sam}
+            />
 
           {/* SOM — Serviceable Obtainable Market */}
           <FormField
@@ -74,7 +76,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.som || ''}
             onChange={(e) => u('som', e.target.value)}
             placeholder="$500M"
-          />
+          confidence={confidenceData.som}
+            />
 
           {/* Market Growth Rate — annual growth rate */}
           <FormField
@@ -82,7 +85,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.marketGrowthRate || ''}
             onChange={(e) => u('marketGrowthRate', e.target.value)}
             placeholder="18% CAGR"
-          />
+          confidence={confidenceData.marketGrowthRate}
+            />
 
           {/* Geographic Focus — primary and expansion markets */}
           <FormField
@@ -90,7 +94,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.geographicFocus || ''}
             onChange={(e) => u('geographicFocus', e.target.value)}
             placeholder="US → EU → APAC"
-          />
+          confidence={confidenceData.geographicFocus}
+            />
 
           {/* Market Timing — when is the company entering relative to the market cycle */}
           <FormField
@@ -98,7 +103,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.marketTiming || ''}
             onChange={(e) => u('marketTiming', e.target.value)}
             options={MARKET_TIMING_OPTIONS}
-          />
+          confidence={confidenceData.marketTiming}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -113,7 +119,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Describe the ideal customer: size, industry, pain points, budget..."
             rows={3}
-          />
+          confidence={confidenceData.targetCustomerProfile}
+            />
 
           {/* Market Dynamics — forces shaping the market */}
           <FormField
@@ -123,7 +130,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Key market forces, consolidation trends, regulatory shifts..."
             rows={3}
-          />
+          confidence={confidenceData.marketDynamics}
+            />
 
           {/* Tailwinds — factors accelerating market growth */}
           <FormField
@@ -133,7 +141,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Regulatory changes, demographic shifts, technology adoption..."
             rows={3}
-          />
+          confidence={confidenceData.tailwinds}
+            />
 
           {/* Headwinds — factors that could slow growth */}
           <FormField
@@ -143,7 +152,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Budget constraints, regulatory uncertainty, market saturation..."
             rows={3}
-          />
+          confidence={confidenceData.headwinds}
+            />
 
           {/* Market Score — 0-10 overall market assessment */}
           <FormField
@@ -151,7 +161,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             value={data.marketScore || 0}
             onChange={(e) => u('marketScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.marketScore}
+            />
 
           {/* Market Notes — freeform observations */}
           <FormField
@@ -161,7 +172,8 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
             type="textarea"
             placeholder="Additional market observations and analysis..."
             rows={3}
-          />
+          confidence={confidenceData.marketNotes}
+            />
         </div>
       </Card>
     </div>

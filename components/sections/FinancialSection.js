@@ -17,7 +17,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // FinancialSection Component
 // ============================================================
-export default function FinancialSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function FinancialSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the financial section
   const u = (field, val) => onChange('financial', { ...data, [field]: val });
 
@@ -44,7 +44,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.lastRoundSize || ''}
             onChange={(e) => u('lastRoundSize', e.target.value)}
             placeholder="$5M"
-          />
+          confidence={confidenceData.lastRoundSize}
+            />
 
           {/* Last Round Date — when the last round closed */}
           <FormField
@@ -52,7 +53,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.lastRoundDate || ''}
             onChange={(e) => u('lastRoundDate', e.target.value)}
             type="date"
-          />
+          confidence={confidenceData.lastRoundDate}
+            />
 
           {/* Last Valuation — pre-money valuation at last round */}
           <FormField
@@ -60,7 +62,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.lastValuation || ''}
             onChange={(e) => u('lastValuation', e.target.value)}
             placeholder="$25M pre"
-          />
+          confidence={confidenceData.lastValuation}
+            />
 
           {/* Total Raised — cumulative capital raised to date */}
           <FormField
@@ -68,7 +71,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.totalRaised || ''}
             onChange={(e) => u('totalRaised', e.target.value)}
             placeholder="$8.5M"
-          />
+          confidence={confidenceData.totalRaised}
+            />
 
           {/* Monthly Burn Rate — how fast cash is being spent */}
           <FormField
@@ -76,7 +80,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.monthlyBurnRate || ''}
             onChange={(e) => u('monthlyBurnRate', e.target.value)}
             placeholder="$280K"
-          />
+          confidence={confidenceData.monthlyBurnRate}
+            />
 
           {/* Runway — months of cash remaining at current burn */}
           <FormField
@@ -84,7 +89,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.runway || ''}
             onChange={(e) => u('runway', e.target.value)}
             placeholder="14 months"
-          />
+          confidence={confidenceData.runway}
+            />
 
           {/* Cash on Hand — current cash balance */}
           <FormField
@@ -92,7 +98,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.cashOnHand || ''}
             onChange={(e) => u('cashOnHand', e.target.value)}
             placeholder="$3.9M"
-          />
+          confidence={confidenceData.cashOnHand}
+            />
 
           {/* Break-Even Target — when the company expects profitability */}
           <FormField
@@ -100,7 +107,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.breakEvenTarget || ''}
             onChange={(e) => u('breakEvenTarget', e.target.value)}
             placeholder="Q3 2027"
-          />
+          confidence={confidenceData.breakEvenTarget}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -115,7 +123,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="40% R&D, 30% Sales & Marketing, 20% G&A, 10% Reserve..."
             rows={3}
-          />
+          confidence={confidenceData.useOfFunds}
+            />
 
           {/* Revenue Projection — forward-looking revenue forecasts */}
           <FormField
@@ -125,7 +134,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="2025: $5M ARR, 2026: $12M ARR, 2027: $28M ARR..."
             rows={3}
-          />
+          confidence={confidenceData.revenueProjection}
+            />
 
           {/* Cap Table Summary — ownership breakdown */}
           <FormField
@@ -135,7 +145,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Founders: 60%, Seed investors: 20%, ESOP: 15%, Advisors: 5%..."
             rows={3}
-          />
+          confidence={confidenceData.capTableSummary}
+            />
 
           {/* Financial Score — 0-10 overall financial assessment */}
           <FormField
@@ -143,7 +154,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             value={data.financialScore || 0}
             onChange={(e) => u('financialScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.financialScore}
+            />
 
           {/* Financial Notes — freeform observations */}
           <FormField
@@ -153,7 +165,8 @@ export default function FinancialSection({ data, onChange, company, settings, on
             type="textarea"
             placeholder="Additional financial observations and analysis..."
             rows={3}
-          />
+          confidence={confidenceData.financialNotes}
+            />
         </div>
       </Card>
     </div>

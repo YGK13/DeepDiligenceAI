@@ -30,7 +30,7 @@ const FOUNDER_FIT_OPTIONS = [
 // ============================================================
 // TeamSection Component
 // ============================================================
-export default function TeamSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function TeamSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the team section
   const u = (field, val) => onChange('team', { ...data, [field]: val });
 
@@ -57,7 +57,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ceoName || ''}
             onChange={(e) => u('ceoName', e.target.value)}
             placeholder="Jane Doe"
-          />
+          confidence={confidenceData.ceoName}
+            />
 
           {/* CEO Background — prior roles, companies, achievements */}
           <FormField
@@ -65,7 +66,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ceoBackground || ''}
             onChange={(e) => u('ceoBackground', e.target.value)}
             placeholder="Ex-Google, 2x founder..."
-          />
+          confidence={confidenceData.ceoBackground}
+            />
 
           {/* CEO LinkedIn — for direct profile verification */}
           <FormField
@@ -73,7 +75,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ceoLinkedin || ''}
             onChange={(e) => u('ceoLinkedin', e.target.value)}
             placeholder="https://linkedin.com/in/..."
-          />
+          confidence={confidenceData.ceoLinkedin}
+            />
 
           {/* CTO Name */}
           <FormField
@@ -81,7 +84,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ctoName || ''}
             onChange={(e) => u('ctoName', e.target.value)}
             placeholder="John Smith"
-          />
+          confidence={confidenceData.ctoName}
+            />
 
           {/* CTO Background — technical pedigree, publications, prior roles */}
           <FormField
@@ -89,7 +93,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ctoBackground || ''}
             onChange={(e) => u('ctoBackground', e.target.value)}
             placeholder="Ex-8200, PhD CS Technion..."
-          />
+          confidence={confidenceData.ctoBackground}
+            />
 
           {/* CTO LinkedIn */}
           <FormField
@@ -97,7 +102,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.ctoLinkedin || ''}
             onChange={(e) => u('ctoLinkedin', e.target.value)}
             placeholder="https://linkedin.com/in/..."
-          />
+          confidence={confidenceData.ctoLinkedin}
+            />
 
           {/* Total Team Size — full headcount including founders */}
           <FormField
@@ -105,7 +111,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.totalTeamSize || ''}
             onChange={(e) => u('totalTeamSize', e.target.value)}
             placeholder="45"
-          />
+          confidence={confidenceData.totalTeamSize}
+            />
 
           {/* Engineering Team Size — developers, data scientists, DevOps */}
           <FormField
@@ -113,7 +120,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.engineeringTeamSize || ''}
             onChange={(e) => u('engineeringTeamSize', e.target.value)}
             placeholder="22"
-          />
+          confidence={confidenceData.engineeringTeamSize}
+            />
 
           {/* Previous Exits — any prior successful exits by the founding team */}
           <FormField
@@ -121,7 +129,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.previousExits || ''}
             onChange={(e) => u('previousExits', e.target.value)}
             placeholder="Company X acquired by Y for $Z"
-          />
+          confidence={confidenceData.previousExits}
+            />
 
           {/* Founder-Market Fit — qualitative assessment */}
           <FormField
@@ -129,7 +138,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.founderMarketFit || ''}
             onChange={(e) => u('founderMarketFit', e.target.value)}
             options={FOUNDER_FIT_OPTIONS}
-          />
+          confidence={confidenceData.founderMarketFit}
+            />
 
           {/* Founder Vesting — vesting structure for founder equity */}
           <FormField
@@ -137,7 +147,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.founderVesting || ''}
             onChange={(e) => u('founderVesting', e.target.value)}
             placeholder="4yr/1yr cliff"
-          />
+          confidence={confidenceData.founderVesting}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -152,7 +163,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="List all co-founders with their roles and backgrounds..."
             rows={3}
-          />
+          confidence={confidenceData.coFounders}
+            />
 
           {/* Key Hires Needed — critical gaps in the team */}
           <FormField
@@ -162,7 +174,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="VP Sales, Head of Regulatory..."
             rows={3}
-          />
+          confidence={confidenceData.keyHiresNeeded}
+            />
 
           {/* Advisors — advisory board members and their relevance */}
           <FormField
@@ -172,7 +185,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Name - Role - Relevance to business..."
             rows={3}
-          />
+          confidence={confidenceData.advisors}
+            />
 
           {/* Board Members — current board composition */}
           <FormField
@@ -182,7 +196,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="List board members, their affiliations, and roles..."
             rows={3}
-          />
+          confidence={confidenceData.boardMembers}
+            />
 
           {/* Domain Expertise — collective domain knowledge of the team */}
           <FormField
@@ -192,7 +207,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Key domain expertise areas the team brings..."
             rows={3}
-          />
+          confidence={confidenceData.domainExpertise}
+            />
 
           {/* Team Score — 0-10 score slider for team completeness */}
           <FormField
@@ -200,7 +216,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             value={data.teamCompleteness || 0}
             onChange={(e) => u('teamCompleteness', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.teamCompleteness}
+            />
 
           {/* Team Notes — freeform notes on team assessment */}
           <FormField
@@ -210,7 +227,8 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Additional observations about the team..."
             rows={3}
-          />
+          confidence={confidenceData.teamNotes}
+            />
         </div>
       </Card>
     </div>

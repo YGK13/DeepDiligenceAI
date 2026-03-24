@@ -32,7 +32,7 @@ const SWITCHING_COSTS_OPTIONS = [
 // ============================================================
 // CompetitiveSection Component
 // ============================================================
-export default function CompetitiveSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function CompetitiveSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the competitive section
   const u = (field, val) => onChange('competitive', { ...data, [field]: val });
 
@@ -59,7 +59,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             value={data.winRate || ''}
             onChange={(e) => u('winRate', e.target.value)}
             placeholder="65%"
-          />
+          confidence={confidenceData.winRate}
+            />
 
           {/* Switching Costs — barrier to customer switching */}
           <FormField
@@ -67,7 +68,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             value={data.switchingCosts || ''}
             onChange={(e) => u('switchingCosts', e.target.value)}
             options={SWITCHING_COSTS_OPTIONS}
-          />
+          confidence={confidenceData.switchingCosts}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -82,7 +84,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="List direct competitors with brief descriptions..."
             rows={4}
-          />
+          confidence={confidenceData.directCompetitors}
+            />
 
           {/* Indirect Competitors — alternative solutions or adjacent products */}
           <FormField
@@ -92,7 +95,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Alternative solutions, adjacent products, DIY approaches..."
             rows={3}
-          />
+          confidence={confidenceData.indirectCompetitors}
+            />
 
           {/* Competitive Advantages — where the company wins */}
           <FormField
@@ -102,7 +106,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Key differentiators and advantages over competitors..."
             rows={3}
-          />
+          confidence={confidenceData.competitiveAdvantages}
+            />
 
           {/* Competitive Weaknesses — where competitors have the edge */}
           <FormField
@@ -112,7 +117,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Areas where competitors are stronger..."
             rows={3}
-          />
+          confidence={confidenceData.competitiveWeaknesses}
+            />
 
           {/* Market Positioning — how the company positions itself */}
           <FormField
@@ -122,7 +128,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Premium/low-cost, niche/horizontal, enterprise/SMB..."
             rows={3}
-          />
+          confidence={confidenceData.marketPositioning}
+            />
 
           {/* Competitor Funding Intel — what competitors have raised */}
           <FormField
@@ -132,7 +139,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Competitor A: $20M Series B (2024), Competitor B: $50M Series C..."
             rows={3}
-          />
+          confidence={confidenceData.competitorFundingIntel}
+            />
 
           {/* Competitive Score — 0-10 overall competitive assessment */}
           <FormField
@@ -140,7 +148,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             value={data.competitiveScore || 0}
             onChange={(e) => u('competitiveScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.competitiveScore}
+            />
 
           {/* Competitive Notes — freeform observations */}
           <FormField
@@ -150,7 +159,8 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
             type="textarea"
             placeholder="Additional competitive landscape observations..."
             rows={3}
-          />
+          confidence={confidenceData.competitiveNotes}
+            />
         </div>
       </Card>
     </div>

@@ -18,7 +18,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // LegalSection Component
 // ============================================================
-export default function LegalSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function LegalSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the legal section
   const u = (field, val) => onChange('legal', { ...data, [field]: val });
 
@@ -45,7 +45,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             value={data.corporateStructure || ''}
             onChange={(e) => u('corporateStructure', e.target.value)}
             placeholder="Delaware C-Corp, Israeli Ltd..."
-          />
+          confidence={confidenceData.corporateStructure}
+            />
 
           {/* Jurisdiction — where the company is legally domiciled */}
           <FormField
@@ -53,7 +54,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             value={data.jurisdiction || ''}
             onChange={(e) => u('jurisdiction', e.target.value)}
             placeholder="Delaware, Israel..."
-          />
+          confidence={confidenceData.jurisdiction}
+            />
 
           {/* Option Pool — employee stock option pool size */}
           <FormField
@@ -61,7 +63,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             value={data.optionPool || ''}
             onChange={(e) => u('optionPool', e.target.value)}
             placeholder="15% ESOP..."
-          />
+          confidence={confidenceData.optionPool}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -76,7 +79,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Active lawsuits, threatened claims, arbitration proceedings..."
             rows={3}
-          />
+          confidence={confidenceData.pendingLitigation}
+            />
 
           {/* IP Assignments — status of IP ownership transfers */}
           <FormField
@@ -86,7 +90,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Founder IP assignment status, contractor IP agreements..."
             rows={3}
-          />
+          confidence={confidenceData.ipAssignments}
+            />
 
           {/* Employment Agreements — key employment contract terms */}
           <FormField
@@ -96,7 +101,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Key employee contract terms, at-will status, severance..."
             rows={3}
-          />
+          confidence={confidenceData.employmentAgreements}
+            />
 
           {/* Non-Compete Status — restrictions on founders/key employees */}
           <FormField
@@ -106,7 +112,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Founder non-competes, key employee restrictions..."
             rows={3}
-          />
+          confidence={confidenceData.nonCompeteStatus}
+            />
 
           {/* Material Contracts — significant business agreements */}
           <FormField
@@ -116,7 +123,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Key customer contracts, vendor agreements, licensing deals..."
             rows={3}
-          />
+          confidence={confidenceData.materialContracts}
+            />
 
           {/* Outstanding Warrants — any warrant instruments issued */}
           <FormField
@@ -126,7 +134,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Warrant holders, strike prices, expiration dates..."
             rows={3}
-          />
+          confidence={confidenceData.outstandingWarrants}
+            />
 
           {/* Legal Risks — overall legal risk assessment */}
           <FormField
@@ -136,7 +145,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Identified legal risks and their potential impact..."
             rows={3}
-          />
+          confidence={confidenceData.legalRisks}
+            />
 
           {/* Legal Score — 0-10 overall legal assessment */}
           <FormField
@@ -144,7 +154,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             value={data.legalScore || 0}
             onChange={(e) => u('legalScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.legalScore}
+            />
 
           {/* Legal Notes — freeform observations */}
           <FormField
@@ -154,7 +165,8 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
             type="textarea"
             placeholder="Additional legal observations and assessment..."
             rows={3}
-          />
+          confidence={confidenceData.legalNotes}
+            />
         </div>
       </Card>
     </div>

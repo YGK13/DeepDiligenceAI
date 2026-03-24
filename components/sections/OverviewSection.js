@@ -71,7 +71,7 @@ const DEAL_SOURCE_OPTIONS = [
 //   settings   — app settings (API keys, preferences) passed to AI panel
 //   onAiResult — callback when AI research returns data for this section
 // ============================================================
-export default function OverviewSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function OverviewSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field within the overview section data
   // Merges the new field value into the existing data object
   const u = (field, val) => onChange('overview', { ...data, [field]: val });
@@ -106,7 +106,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.companyName || ''}
             onChange={(e) => u('companyName', e.target.value)}
             placeholder="Acme Health"
-          />
+          confidence={confidenceData.companyName}
+            />
 
           {/* Website URL — company's primary web presence */}
           <FormField
@@ -114,7 +115,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.websiteUrl || ''}
             onChange={(e) => u('websiteUrl', e.target.value)}
             placeholder="https://acmehealth.com"
-          />
+          confidence={confidenceData.websiteUrl}
+            />
 
           {/* Year Founded — when the company was incorporated */}
           <FormField
@@ -122,7 +124,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.yearFounded || ''}
             onChange={(e) => u('yearFounded', e.target.value)}
             placeholder="2021"
-          />
+          confidence={confidenceData.yearFounded}
+            />
 
           {/* HQ City — city where the company is headquartered */}
           <FormField
@@ -130,7 +133,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.hqCity || ''}
             onChange={(e) => u('hqCity', e.target.value)}
             placeholder="Tel Aviv"
-          />
+          confidence={confidenceData.hqCity}
+            />
 
           {/* HQ Country — country of headquarters */}
           <FormField
@@ -138,7 +142,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.hqCountry || ''}
             onChange={(e) => u('hqCountry', e.target.value)}
             placeholder="Israel"
-          />
+          confidence={confidenceData.hqCountry}
+            />
 
           {/* Stage — current funding / maturity stage */}
           <FormField
@@ -146,7 +151,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.stage || ''}
             onChange={(e) => u('stage', e.target.value)}
             options={STAGE_OPTIONS}
-          />
+          confidence={confidenceData.stage}
+            />
 
           {/* Sector — primary industry vertical */}
           <FormField
@@ -154,7 +160,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.sector || ''}
             onChange={(e) => u('sector', e.target.value)}
             options={SECTOR_OPTIONS}
-          />
+          confidence={confidenceData.sector}
+            />
 
           {/* Sub-Sector — more specific classification within the sector */}
           <FormField
@@ -162,7 +169,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.subSector || ''}
             onChange={(e) => u('subSector', e.target.value)}
             placeholder="Digital Therapeutics"
-          />
+          confidence={confidenceData.subSector}
+            />
 
           {/* Employee Count — total headcount */}
           <FormField
@@ -170,7 +178,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.employeeCount || ''}
             onChange={(e) => u('employeeCount', e.target.value)}
             placeholder="45"
-          />
+          confidence={confidenceData.employeeCount}
+            />
 
           {/* LinkedIn URL — company LinkedIn page */}
           <FormField
@@ -178,7 +187,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.linkedinUrl || ''}
             onChange={(e) => u('linkedinUrl', e.target.value)}
             placeholder="https://linkedin.com/company/..."
-          />
+          confidence={confidenceData.linkedinUrl}
+            />
 
           {/* Crunchbase URL — company Crunchbase profile */}
           <FormField
@@ -186,7 +196,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.crunchbaseUrl || ''}
             onChange={(e) => u('crunchbaseUrl', e.target.value)}
             placeholder="https://crunchbase.com/organization/..."
-          />
+          confidence={confidenceData.crunchbaseUrl}
+            />
 
           {/* Deal Source — how this deal entered the pipeline */}
           <FormField
@@ -194,7 +205,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.dealSource || ''}
             onChange={(e) => u('dealSource', e.target.value)}
             options={DEAL_SOURCE_OPTIONS}
-          />
+          confidence={confidenceData.dealSource}
+            />
 
           {/* Referred By — name of the person who referred the deal */}
           <FormField
@@ -202,7 +214,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.referredBy || ''}
             onChange={(e) => u('referredBy', e.target.value)}
             placeholder="John Smith"
-          />
+          confidence={confidenceData.referredBy}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -217,7 +230,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             type="textarea"
             placeholder="Describe the company's value proposition in 2-3 sentences..."
             rows={3}
-          />
+          confidence={confidenceData.elevatorPitch}
+            />
 
           {/* One-Line Summary — ultra-concise description for reports */}
           <FormField
@@ -225,7 +239,8 @@ export default function OverviewSection({ data, onChange, company, settings, onA
             value={data.oneLineSummary || ''}
             onChange={(e) => u('oneLineSummary', e.target.value)}
             placeholder="AI-powered digital therapeutics platform for chronic disease management"
-          />
+          confidence={confidenceData.oneLineSummary}
+            />
         </div>
       </Card>
     </div>

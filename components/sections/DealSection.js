@@ -50,7 +50,7 @@ const BOARD_SEAT_OPTIONS = [
 // ============================================================
 // DealSection Component
 // ============================================================
-export default function DealSection({ data, onChange, company, settings, onAiResult, onAutoFill }) {
+export default function DealSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
   // Helper to update a single field in the deal section
   const u = (field, val) => onChange('deal', { ...data, [field]: val });
 
@@ -77,7 +77,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.roundName || ''}
             onChange={(e) => u('roundName', e.target.value)}
             placeholder="Series A"
-          />
+          confidence={confidenceData.roundName}
+            />
 
           {/* Target Raise — total amount the company is raising */}
           <FormField
@@ -85,7 +86,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.targetRaise || ''}
             onChange={(e) => u('targetRaise', e.target.value)}
             placeholder="$10M"
-          />
+          confidence={confidenceData.targetRaise}
+            />
 
           {/* Pre-Money Valuation — valuation before this round's investment */}
           <FormField
@@ -93,7 +95,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.preMoneyValuation || ''}
             onChange={(e) => u('preMoneyValuation', e.target.value)}
             placeholder="$40M"
-          />
+          confidence={confidenceData.preMoneyValuation}
+            />
 
           {/* Instrument Type — investment vehicle being used */}
           <FormField
@@ -101,7 +104,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.instrumentType || ''}
             onChange={(e) => u('instrumentType', e.target.value)}
             options={INSTRUMENT_OPTIONS}
-          />
+          confidence={confidenceData.instrumentType}
+            />
 
           {/* Lead Investor Committed — has a lead been secured */}
           <FormField
@@ -109,7 +113,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.leadInvestorCommitted || ''}
             onChange={(e) => u('leadInvestorCommitted', e.target.value)}
             options={LEAD_COMMITTED_OPTIONS}
-          />
+          confidence={confidenceData.leadInvestorCommitted}
+            />
 
           {/* Our Allocation — our investment amount in this round */}
           <FormField
@@ -117,7 +122,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.ourAllocation || ''}
             onChange={(e) => u('ourAllocation', e.target.value)}
             placeholder="$250K"
-          />
+          confidence={confidenceData.ourAllocation}
+            />
 
           {/* Ownership Target — target ownership percentage post-investment */}
           <FormField
@@ -125,7 +131,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.ownershipTarget || ''}
             onChange={(e) => u('ownershipTarget', e.target.value)}
             placeholder="0.8%"
-          />
+          confidence={confidenceData.ownershipTarget}
+            />
 
           {/* Board Seat — whether we get board representation */}
           <FormField
@@ -133,7 +140,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.boardSeat || ''}
             onChange={(e) => u('boardSeat', e.target.value)}
             options={BOARD_SEAT_OPTIONS}
-          />
+          confidence={confidenceData.boardSeat}
+            />
         </div>
 
         {/* --------------------------------------------------------
@@ -148,7 +156,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Pro-rata rights terms, thresholds, and conditions..."
             rows={3}
-          />
+          confidence={confidenceData.proRataRights}
+            />
 
           {/* Liquidation Preference — priority and multiple in a liquidation event */}
           <FormField
@@ -158,7 +167,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="1x non-participating preferred, seniority stack..."
             rows={3}
-          />
+          confidence={confidenceData.liquidationPreference}
+            />
 
           {/* Anti-Dilution — protection against down rounds */}
           <FormField
@@ -168,7 +178,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Broad-based weighted average, narrow-based, full ratchet..."
             rows={3}
-          />
+          confidence={confidenceData.antiDilution}
+            />
 
           {/* Drag-Along — rights to force minority shareholders to sell */}
           <FormField
@@ -178,7 +189,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Drag-along thresholds, conditions, and protections..."
             rows={3}
-          />
+          confidence={confidenceData.dragAlong}
+            />
 
           {/* Tag-Along — rights for minority shareholders to join a sale */}
           <FormField
@@ -188,7 +200,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Tag-along rights, co-sale provisions..."
             rows={3}
-          />
+          confidence={confidenceData.tagAlong}
+            />
 
           {/* Vesting Schedule — equity vesting terms for this deal */}
           <FormField
@@ -198,7 +211,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="4-year vest, 1-year cliff, monthly thereafter..."
             rows={3}
-          />
+          confidence={confidenceData.vestingSchedule}
+            />
 
           {/* ESOP Size — employee stock option pool allocation */}
           <FormField
@@ -208,7 +222,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="15% pre-money, 10% post-money, expansion plans..."
             rows={3}
-          />
+          confidence={confidenceData.esopSize}
+            />
 
           {/* Key Terms & Conditions — other material terms */}
           <FormField
@@ -218,7 +233,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Information rights, ROFR, pay-to-play, protective provisions..."
             rows={4}
-          />
+          confidence={confidenceData.keyTermsConditions}
+            />
 
           {/* Deal Score — 0-10 overall deal terms assessment */}
           <FormField
@@ -226,7 +242,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             value={data.dealScore || 0}
             onChange={(e) => u('dealScore', Number(e.target.value))}
             type="score"
-          />
+          confidence={confidenceData.dealScore}
+            />
 
           {/* Deal Notes — freeform observations */}
           <FormField
@@ -236,7 +253,8 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
             type="textarea"
             placeholder="Additional deal terms observations and negotiation notes..."
             rows={3}
-          />
+          confidence={confidenceData.dealNotes}
+            />
         </div>
       </Card>
     </div>
