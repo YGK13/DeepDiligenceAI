@@ -18,6 +18,11 @@ import { useState, useCallback, useMemo } from 'react';
 import AppShell from '@/components/layout/AppShell';
 
 // ============================================================
+// MODALS
+// ============================================================
+import CompanyVerificationModal from '@/components/modals/CompanyVerificationModal';
+
+// ============================================================
 // VIEW COMPONENTS
 // ============================================================
 import DashboardView from '@/components/views/DashboardView';
@@ -110,6 +115,14 @@ export default function HomePage() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
 
+  // --- Company Verification state ---
+  // When the user types a name and clicks "Create", we first show a
+  // verification modal so they confirm the RIGHT company before we
+  // spend API credits auto-filling 214 fields with the wrong data.
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [pendingCompanyName, setPendingCompanyName] = useState('');
+  const [pendingCompanyUrl, setPendingCompanyUrl] = useState('');
+
   // --- Derived loading state ---
   // We're "hydrated" when all async data loads have finished.
   // This prevents flash-of-empty-content on first render.
@@ -150,19 +163,69 @@ export default function HomePage() {
   // COMPANY CRUD OPERATIONS
   // ============================================================
 
-  // Create a new company and switch to it
+  // ============================================================
+  // STEP 1: User types a name → open verification modal
+  // We DON'T create the company yet. First we verify identity.
+  // ============================================================
   const handleNewCompany = useCallback(
-    async (name) => {
+    (name) => {
       if (!name?.trim()) return;
-      const newCompany = await createCompany(name.trim());
-      if (newCompany) {
-        setActiveCompanyId(newCompany.id);
-        setActiveTab('overview');
-      }
+      setPendingCompanyName(name.trim());
+      setPendingCompanyUrl('');
       setShowNewModal(false);
       setNewCompanyName('');
+      setShowVerifyModal(true); // triggers the verification modal
     },
-    [createCompany]
+    []
+  );
+
+  // ============================================================
+  // STEP 2: User confirms a candidate from verification modal
+  // NOW we create the company with verified data pre-populated.
+  // ============================================================
+  const handleVerifiedCompany = useCallback(
+    async (candidate) => {
+      setShowVerifyModal(false);
+
+      // Create the company with the verified name
+      const newCompany = await createCompany(candidate.name);
+      if (!newCompany) return;
+
+      // Pre-populate the overview section with verified data from the candidate
+      const overviewData = {
+        companyName: candidate.name,
+        websiteUrl: candidate.domain ? `https://${candidate.domain}` : '',
+        hqCity: candidate.location?.split(',')[0]?.trim() || '',
+        hqCountry: candidate.location?.split(',')[1]?.trim() || '',
+        sector: candidate.sector !== 'Unknown' ? candidate.sector : '',
+        stage: candidate.stage !== 'Unknown' ? candidate.stage : '',
+        yearFounded: candidate.founded !== 'Unknown' ? candidate.founded : '',
+        elevatorPitch: candidate.description || '',
+      };
+      updateCompany(newCompany.id, 'overview', overviewData);
+
+      setActiveCompanyId(newCompany.id);
+      setActiveTab('dashboard');
+    },
+    [createCompany, updateCompany]
+  );
+
+  // ============================================================
+  // STEP 2b: User says "none match" — create with just the name
+  // ============================================================
+  const handleNoVerificationMatch = useCallback(
+    async () => {
+      setShowVerifyModal(false);
+
+      // Create company with just the typed name — no pre-population
+      const newCompany = await createCompany(pendingCompanyName);
+      if (newCompany) {
+        updateCompany(newCompany.id, 'overview', { companyName: pendingCompanyName });
+        setActiveCompanyId(newCompany.id);
+        setActiveTab('overview'); // send to overview so they can fill details manually
+      }
+    },
+    [pendingCompanyName, createCompany, updateCompany]
   );
 
   // Delete the active company (with confirmation)
@@ -224,9 +287,13 @@ export default function HomePage() {
   // Takes structured JSON from the autofill API and merges it
   // into the section's existing data. Only overwrites fields that
   // the AI returned non-empty values for — preserves user edits.
+  //
+  // Now also accepts a third argument: confidenceData — a map of
+  // field keys to confidence levels ("verified"|"likely"|"inferred"|"unknown").
+  // Stored in company.confidenceData[sectionId] for ConfidenceBadge rendering.
   // ============================================================
   const handleAutoFill = useCallback(
-    (sectionId, aiData) => {
+    (sectionId, aiData, confidenceData) => {
       if (!activeCompanyId || !aiData) return;
 
       // Get the current section data
@@ -246,8 +313,20 @@ export default function HomePage() {
 
       // Update the company section with merged data
       handleSectionChange(sectionId, merged);
+
+      // ---- Store confidence metadata alongside section data ----
+      // company.confidenceData is a top-level object keyed by sectionId,
+      // each value is { fieldKey: "verified"|"likely"|"inferred"|"unknown" }.
+      // Stored as a separate key so it doesn't pollute actual field data.
+      if (confidenceData && Object.keys(confidenceData).length > 0) {
+        const existingConfidence = company?.confidenceData || {};
+        updateCompany(activeCompanyId, 'confidenceData', {
+          ...existingConfidence,
+          [sectionId]: confidenceData,
+        });
+      }
     },
-    [activeCompanyId, company, handleSectionChange]
+    [activeCompanyId, company, handleSectionChange, updateCompany]
   );
 
   // ============================================================
@@ -288,8 +367,10 @@ export default function HomePage() {
         }
 
         // result.data is { overview: {...}, team: {...}, product: {...}, ... }
+        // result.confidence is { overview: {...}, team: {...}, ... } with per-field confidence levels
         // Merge each section's AI data into the company
         let totalFilled = 0;
+        const allConfidence = {};
         for (const [sectionKey, sectionData] of Object.entries(result.data)) {
           if (sectionData && typeof sectionData === 'object') {
             const currentData = company[sectionKey] || {};
@@ -301,7 +382,21 @@ export default function HomePage() {
               }
             }
             handleSectionChange(sectionKey, merged);
+
+            // Collect confidence data for this section
+            if (result.confidence?.[sectionKey]) {
+              allConfidence[sectionKey] = result.confidence[sectionKey];
+            }
           }
+        }
+
+        // ---- Persist all confidence metadata in one update ----
+        if (Object.keys(allConfidence).length > 0) {
+          const existingConfidence = company?.confidenceData || {};
+          updateCompany(activeCompanyId, 'confidenceData', {
+            ...existingConfidence,
+            ...allConfidence,
+          });
         }
 
         return { success: true, totalFilled };
@@ -309,7 +404,7 @@ export default function HomePage() {
         return { success: false, error: err.message };
       }
     },
-    [activeCompanyId, company, settings, handleSectionChange]
+    [activeCompanyId, company, settings, handleSectionChange, updateCompany]
   );
 
   // ============================================================
@@ -416,6 +511,7 @@ export default function HomePage() {
     }
 
     // Section editor — look up the component from the mapping
+    // Pass confidenceData for the active section so FormField can show ConfidenceBadge
     const SectionComponent = SECTION_COMPONENTS[activeTab];
     if (SectionComponent && company) {
       return (
@@ -426,6 +522,7 @@ export default function HomePage() {
           settings={settings}
           onAiResult={handleAiResult}
           onAutoFill={handleAutoFill}
+          confidenceData={company?.confidenceData?.[activeTab] || {}}
         />
       );
     }
@@ -530,6 +627,22 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* COMPANY VERIFICATION MODAL                                   */}
+      {/* Shows 3-5 candidate matches so user confirms the RIGHT one   */}
+      {/* before we spend API credits auto-filling 214 fields.         */}
+      {/* ============================================================ */}
+      {showVerifyModal && (
+        <CompanyVerificationModal
+          companyName={pendingCompanyName}
+          companyUrl={pendingCompanyUrl}
+          settings={settings}
+          onConfirm={handleVerifiedCompany}
+          onCancel={() => setShowVerifyModal(false)}
+          onNoneMatch={handleNoVerificationMatch}
+        />
       )}
     </>
   );
