@@ -75,6 +75,11 @@ import { useSubscription } from '@/lib/hooks/useSubscription';
 import { calculateOverallScore, calculateCompletionStats } from '@/lib/scoring';
 
 // ============================================================
+// DEMO COMPANY — pre-loaded realistic data for first-time users
+// ============================================================
+import { createDemoCompany } from '@/lib/demo-company';
+
+// ============================================================
 // SECTION → COMPONENT MAPPING
 // Maps tab IDs to their React components for dynamic rendering
 // ============================================================
@@ -290,6 +295,38 @@ export default function HomePage() {
     setActiveCompanyId(companyId);
     setActiveTab('dashboard');
   }, []);
+
+  // ============================================================
+  // LOAD DEMO COMPANY — inject pre-populated NovaTech AI
+  // Creates a fully-filled demo company so first-time users can
+  // explore every feature (scoring, reports, pipeline, etc.)
+  // before committing their own data.
+  // ============================================================
+  const handleLoadDemo = useCallback(() => {
+    const demo = createDemoCompany();
+
+    // Add the demo company to the companies array via setCompanies
+    // (this triggers the auto-save to localStorage via useCompanies)
+    setCompanies((prev) => {
+      // Prevent duplicate demo companies
+      const filtered = prev.filter((c) => c.id !== 'demo-company-novatech');
+      return [...filtered, demo];
+    });
+
+    // Select the demo company and navigate to the dashboard
+    setActiveCompanyId(demo.id);
+    setActiveTab('dashboard');
+
+    // Mark demo as loaded so we don't re-prompt
+    try {
+      localStorage.setItem('duedrill_demo_loaded', 'true');
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+
+    // Close onboarding if it's showing
+    setShowOnboarding(false);
+  }, [setCompanies]);
 
   // ============================================================
   // SECTION DATA UPDATE HANDLER
@@ -556,7 +593,7 @@ export default function HomePage() {
   // CONTENT RENDERER — Maps activeTab to the right component
   // ============================================================
   const renderContent = () => {
-    // No company selected — show welcome state
+    // No company selected — show welcome state with demo option
     if (!company && activeTab !== 'settings' && activeTab !== 'pipeline') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
@@ -574,6 +611,25 @@ export default function HomePage() {
           >
             + Create Your First Company
           </button>
+
+          {/* ============================================================
+              DEMO COMPANY BUTTON — lets users explore with pre-loaded data
+              Only shows if no demo has been loaded yet
+              ============================================================ */}
+          <button
+            className="mt-3 px-6 py-2.5 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--border)',
+              color: 'var(--text-secondary)',
+            }}
+            onClick={handleLoadDemo}
+          >
+            or Load Demo Company (NovaTech AI)
+          </button>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)', opacity: 0.6 }}>
+            Explore all features with realistic pre-filled data
+          </p>
         </div>
       );
     }
@@ -824,6 +880,7 @@ export default function HomePage() {
           }}
           onSkip={() => setShowOnboarding(false)}
           onComplete={() => setShowOnboarding(false)}
+          onLoadDemo={handleLoadDemo}
         />
       )}
     </>

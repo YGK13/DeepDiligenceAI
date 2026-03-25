@@ -9,6 +9,7 @@
 // ============================================================
 
 import React from 'react';
+import SectionHelp from '@/components/ui/SectionHelp';
 
 // ============================================================
 // Card Component
@@ -20,6 +21,8 @@ import React from 'react';
 //   headerRight — optional React node rendered on the right side of the header
 //                 (use for action buttons, badges, toggles, etc.)
 //   className   — additional CSS classes to merge onto the outer container
+//   sectionId   — optional section ID (e.g., 'team', 'product'). When provided,
+//                 renders a contextual help "?" button next to the title.
 // ============================================================
 export default function Card({
   children,
@@ -27,6 +30,7 @@ export default function Card({
   subtitle,
   headerRight,
   className = '',
+  sectionId,
 }) {
   // Determine if we need to render the header section at all
   // Only render when at least one header prop is provided
@@ -49,12 +53,16 @@ export default function Card({
           -------------------------------------------------------- */}
       {hasHeader && (
         <div className="flex items-start justify-between gap-3 mb-4">
-          {/* Left side: title + subtitle stack */}
+          {/* Left side: title + subtitle stack + optional section help */}
           <div className="min-w-0 flex-1">
             {title && (
-              <h3 className="text-[16px] font-semibold text-[#e8e9ed] leading-tight">
-                {title}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-[16px] font-semibold text-[#e8e9ed] leading-tight">
+                  {title}
+                </h3>
+                {/* ---- Contextual help button — shown when sectionId is provided ---- */}
+                {sectionId && <SectionHelp sectionId={sectionId} />}
+              </div>
             )}
             {subtitle && (
               <p className="text-[12px] text-[#6b7084] mt-0.5 leading-normal">

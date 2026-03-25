@@ -56,7 +56,7 @@ const FEATURES = [
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
-export default function OnboardingWizard({ onCreateCompany, onSkip, onComplete }) {
+export default function OnboardingWizard({ onCreateCompany, onSkip, onComplete, onLoadDemo }) {
   // --- Wizard step: 1 = welcome, 2 = enter company, 3 = researching ---
   const [step, setStep] = useState(1);
 
@@ -196,7 +196,7 @@ export default function OnboardingWizard({ onCreateCompany, onSkip, onComplete }
         ))}
       </div>
 
-      {/* ---- CTA button ---- */}
+      {/* ---- CTA buttons ---- */}
       <div className="flex flex-col items-center gap-3">
         <button
           className="px-8 py-3 rounded-lg font-semibold text-white text-base transition-all hover:opacity-90"
@@ -205,6 +205,19 @@ export default function OnboardingWizard({ onCreateCompany, onSkip, onComplete }
         >
           Let's analyze your first company
         </button>
+        {/* ---- Try Demo link — loads pre-populated NovaTech AI ---- */}
+        {onLoadDemo && (
+          <button
+            className="text-sm font-medium transition-all hover:underline"
+            style={{ color: THEME.accent }}
+            onClick={() => {
+              markOnboarded();
+              onLoadDemo();
+            }}
+          >
+            Try a demo company instead
+          </button>
+        )}
         <button
           className="text-sm transition-all hover:underline"
           style={{ color: THEME.secondary }}

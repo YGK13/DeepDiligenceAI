@@ -94,7 +94,7 @@ export default function OverviewSection({ data, onChange, company, settings, onA
       {/* --------------------------------------------------------
           Main form card — all overview fields
           -------------------------------------------------------- */}
-      <Card title="Company Overview" subtitle="Basic company information, stage, sector, and deal source">
+      <Card title="Company Overview" subtitle="Basic company information, stage, sector, and deal source" sectionId="overview">
         {/* --------------------------------------------------------
             Grid layout — short text fields arranged in responsive grid
             1 col on mobile, 2 on tablet, 3 on desktop

@@ -481,9 +481,12 @@ export default function LandingPage() {
           <p className="text-[#6b7084] text-xs">
             &copy; {new Date().getFullYear()} DueDrill by 5FT View Consulting. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center">
             <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
             <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
+            <a href="/trust" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Security</a>
+            <a href="/faq" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">FAQ</a>
+            <a href="/changelog" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Changelog</a>
             <a href="mailto:yuri@5ftview.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
