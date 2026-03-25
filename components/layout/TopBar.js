@@ -17,6 +17,7 @@
 // ============================================================================
 
 import { useCallback } from 'react';
+import UserMenu from '@/components/auth/UserMenu';
 
 // ============ HELPERS ============
 
@@ -180,22 +181,6 @@ export default function TopBar({
           </div>
         </div>
 
-        {/* ---------- User indicator / Sign out ---------- */}
-        {user && (
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#4a7dff]/20 border border-[#4a7dff]/40 flex items-center justify-center text-[10px] font-bold text-[#4a7dff] uppercase" title={user.email}>
-              {user.email?.[0] || 'U'}
-            </div>
-            <button
-              onClick={onSignOut}
-              className="text-[#6b7084] text-xs hover:text-[#ef4444] transition-colors"
-              title="Sign out"
-            >
-              Sign out
-            </button>
-          </div>
-        )}
-
         {/* ---------- Delete company button ---------- */}
         {/* Only shown when there is an active company to delete */}
         {hasCompany && (
@@ -227,6 +212,9 @@ export default function TopBar({
             <span className="hidden sm:inline">Delete</span>
           </button>
         )}
+
+        {/* ---------- User Menu — avatar, dropdown, sign out ---------- */}
+        <UserMenu user={user} signOut={onSignOut} />
       </div>
     </header>
   );
