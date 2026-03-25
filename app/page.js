@@ -10,7 +10,7 @@
 // is not configured. Zero-config local mode, cloud-ready.
 // ============================================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 // ============================================================
 // LAYOUT COMPONENTS
@@ -22,6 +22,11 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 // MODALS
 // ============================================================
 import CompanyVerificationModal from '@/components/modals/CompanyVerificationModal';
+
+// ============================================================
+// ONBOARDING — first-time user wizard (shows once, then never)
+// ============================================================
+import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 
 // ============================================================
 // VIEW COMPONENTS
@@ -135,10 +140,28 @@ export default function HomePage() {
   const [pendingCompanyName, setPendingCompanyName] = useState('');
   const [pendingCompanyUrl, setPendingCompanyUrl] = useState('');
 
+  // --- Onboarding wizard state ---
+  // Shown once for first-time users with no companies.
+  // After completion or skip, localStorage flag prevents re-showing.
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   // --- Derived loading state ---
   // We're "hydrated" when all async data loads have finished.
   // This prevents flash-of-empty-content on first render.
   const isHydrated = !authLoading && !companiesLoading && !settingsLoading && !subLoading;
+
+  // ============================================================
+  // ONBOARDING CHECK — show wizard for first-time users
+  // Fires once after hydration. If the user has zero companies
+  // and hasn't been onboarded yet, show the wizard overlay.
+  // ============================================================
+  useEffect(() => {
+    if (!isHydrated) return;
+    const alreadyOnboarded = localStorage.getItem('duedrill_onboarded');
+    if (companies.length === 0 && !alreadyOnboarded) {
+      setShowOnboarding(true);
+    }
+  }, [isHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- Auto-select first company when companies load ---
   // Only runs when companies change AND no company is selected
@@ -343,11 +366,15 @@ export default function HomePage() {
 
   // ============================================================
   // RESEARCH ALL SECTIONS HANDLER
-  // Calls the autofill API with section='all' and populates
-  // every section in one shot. Used by the Dashboard view.
+  // Now calls each section INDIVIDUALLY so we can show per-section
+  // progress instead of one opaque "waiting..." spinner.
+  //
+  // The onProgress callback is called after each section completes:
+  //   onProgress({ section, sectionIndex, totalSections, filled, status })
+  // This lets DashboardView render a live checklist of section progress.
   // ============================================================
   const handleResearchAll = useCallback(
-    async () => {
+    async (onProgress) => {
       if (!activeCompanyId || !company) return;
 
       const companyName = company.overview?.companyName || company.overview?.name || company.name || '';
@@ -358,63 +385,113 @@ export default function HomePage() {
         return;
       }
 
-      try {
-        const response = await fetch('/api/ai/autofill', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            companyName,
-            companyUrl,
-            section: 'all',
-            provider: settings?.provider,
-            model: settings?.models?.[settings?.provider] || '',
-            apiKeys: settings?.apiKeys || {},
-          }),
-        });
+      // The 15 autofillable sections (matches AUTOFILL_SECTION_ORDER)
+      const sections = [
+        'overview', 'team', 'product', 'market', 'business', 'traction',
+        'financial', 'competitive', 'ip', 'customers', 'investors',
+        'regulatory', 'legal', 'israel', 'risks',
+      ];
 
-        const result = await response.json();
+      let totalFilled = 0;
+      let errors = 0;
+      const allConfidence = {};
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Auto-fill failed');
-        }
+      for (let i = 0; i < sections.length; i++) {
+        const sectionKey = sections[i];
 
-        // result.data is { overview: {...}, team: {...}, product: {...}, ... }
-        // result.confidence is { overview: {...}, team: {...}, ... } with per-field confidence levels
-        // Merge each section's AI data into the company
-        let totalFilled = 0;
-        const allConfidence = {};
-        for (const [sectionKey, sectionData] of Object.entries(result.data)) {
-          if (sectionData && typeof sectionData === 'object') {
-            const currentData = company[sectionKey] || {};
-            const merged = { ...currentData };
-            for (const [key, value] of Object.entries(sectionData)) {
-              if (value !== '' && value !== null && value !== undefined) {
-                merged[key] = value;
-                totalFilled++;
-              }
-            }
-            handleSectionChange(sectionKey, merged);
-
-            // Collect confidence data for this section
-            if (result.confidence?.[sectionKey]) {
-              allConfidence[sectionKey] = result.confidence[sectionKey];
-            }
-          }
-        }
-
-        // ---- Persist all confidence metadata in one update ----
-        if (Object.keys(allConfidence).length > 0) {
-          const existingConfidence = company?.confidenceData || {};
-          updateCompany(activeCompanyId, 'confidenceData', {
-            ...existingConfidence,
-            ...allConfidence,
+        // Report progress: this section is starting
+        if (onProgress) {
+          onProgress({
+            section: sectionKey,
+            sectionIndex: i,
+            totalSections: sections.length,
+            status: 'researching',
           });
         }
 
-        return { success: true, totalFilled };
-      } catch (err) {
-        return { success: false, error: err.message };
+        try {
+          const response = await fetch('/api/ai/autofill', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              companyName,
+              companyUrl,
+              section: sectionKey,
+              provider: settings?.provider,
+              model: settings?.models?.[settings?.provider] || '',
+              apiKeys: settings?.apiKeys || {},
+            }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success && result.data) {
+            // Merge AI data into the company section
+            const currentData = company[sectionKey] || {};
+            const merged = { ...currentData };
+            let sectionFilled = 0;
+
+            for (const [key, value] of Object.entries(result.data)) {
+              if (value !== '' && value !== null && value !== undefined) {
+                merged[key] = value;
+                sectionFilled++;
+                totalFilled++;
+              }
+            }
+
+            handleSectionChange(sectionKey, merged);
+
+            // Collect confidence data
+            if (result.confidence) {
+              allConfidence[sectionKey] = result.confidence;
+            }
+
+            // Report progress: section complete
+            if (onProgress) {
+              onProgress({
+                section: sectionKey,
+                sectionIndex: i,
+                totalSections: sections.length,
+                filled: sectionFilled,
+                status: 'done',
+              });
+            }
+          } else {
+            errors++;
+            if (onProgress) {
+              onProgress({
+                section: sectionKey,
+                sectionIndex: i,
+                totalSections: sections.length,
+                status: 'error',
+                error: result.error || 'Failed',
+              });
+            }
+          }
+        } catch (err) {
+          errors++;
+          if (onProgress) {
+            onProgress({
+              section: sectionKey,
+              sectionIndex: i,
+              totalSections: sections.length,
+              status: 'error',
+              error: err.message,
+            });
+          }
+        }
       }
+
+      // Persist all confidence metadata in one update
+      if (Object.keys(allConfidence).length > 0) {
+        const existingConfidence = company?.confidenceData || {};
+        updateCompany(activeCompanyId, 'confidenceData', {
+          ...existingConfidence,
+          ...allConfidence,
+        });
+      }
+
+      return { success: errors === 0, totalFilled, errors };
     },
     [activeCompanyId, company, settings, handleSectionChange, updateCompany]
   );
@@ -726,6 +803,27 @@ export default function HomePage() {
           onConfirm={handleVerifiedCompany}
           onCancel={() => setShowVerifyModal(false)}
           onNoneMatch={handleNoVerificationMatch}
+        />
+      )}
+
+      {/* ============================================================ */}
+      {/* ONBOARDING WIZARD                                            */}
+      {/* Full-screen overlay for first-time users with no companies.  */}
+      {/* Guides them through creating their first company, then       */}
+      {/* hands off to the verification modal for identity confirm.    */}
+      {/* ============================================================ */}
+      {showOnboarding && (
+        <OnboardingWizard
+          onCreateCompany={(name, url) => {
+            // Dismiss the wizard, then trigger the normal new-company
+            // verification flow so the user confirms the right entity.
+            setShowOnboarding(false);
+            setPendingCompanyName(name);
+            setPendingCompanyUrl(url || '');
+            setShowVerifyModal(true);
+          }}
+          onSkip={() => setShowOnboarding(false)}
+          onComplete={() => setShowOnboarding(false)}
         />
       )}
     </>

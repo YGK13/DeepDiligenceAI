@@ -59,13 +59,27 @@ export default function DashboardView({ company, onResearchAll }) {
   // ============ RESEARCH ALL STATE ============
   const [isResearching, setIsResearching] = useState(false);
   const [researchResult, setResearchResult] = useState(null);
+  // Per-section progress tracker: { overview: 'done', team: 'researching', ... }
+  const [sectionProgress, setSectionProgress] = useState({});
 
   const handleResearchAll = useCallback(async () => {
     if (!onResearchAll) return;
     setIsResearching(true);
     setResearchResult(null);
+    setSectionProgress({});
+
     try {
-      const result = await onResearchAll();
+      // Pass a progress callback that updates per-section status
+      const result = await onResearchAll((progress) => {
+        setSectionProgress((prev) => ({
+          ...prev,
+          [progress.section]: {
+            status: progress.status,
+            filled: progress.filled || 0,
+            error: progress.error || '',
+          },
+        }));
+      });
       setResearchResult(result);
     } catch (err) {
       setResearchResult({ success: false, error: err.message });
@@ -174,15 +188,60 @@ export default function DashboardView({ company, onResearchAll }) {
             </button>
           </div>
 
-          {/* Loading progress bar */}
+          {/* ============ SECTION-BY-SECTION PROGRESS ============ */}
+          {/* Shows live progress as each section completes — much better UX
+              than a single pulsing bar that gives zero feedback for 60+ seconds */}
           {isResearching && (
             <div className="mt-3">
-              <div className="h-1.5 w-full bg-[#252836] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#4a7dff] to-[#34d399] rounded-full animate-pulse w-3/4" />
+              {/* Overall progress bar */}
+              {(() => {
+                const total = 15;
+                const done = Object.values(sectionProgress).filter(s => s.status === 'done').length;
+                const pct = Math.round((done / total) * 100);
+                return (
+                  <div className="mb-2">
+                    <div className="flex justify-between text-[10px] text-[#6b7084] mb-1">
+                      <span>{done}/{total} sections</span>
+                      <span>{pct}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-[#252836] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#4a7dff] to-[#34d399] rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Per-section checklist */}
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5 mt-2">
+                {['overview','team','product','market','business','traction',
+                  'financial','competitive','ip','customers','investors',
+                  'regulatory','legal','israel','risks'].map((sec) => {
+                  const p = sectionProgress[sec];
+                  const status = p?.status || 'pending';
+                  return (
+                    <div
+                      key={sec}
+                      className={
+                        'px-2 py-1.5 rounded text-[10px] font-medium text-center truncate ' +
+                        (status === 'done'
+                          ? 'bg-[#34d399]/15 text-[#34d399]'
+                          : status === 'researching'
+                            ? 'bg-[#4a7dff]/15 text-[#4a7dff] animate-pulse'
+                            : status === 'error'
+                              ? 'bg-[#ef4444]/15 text-[#ef4444]'
+                              : 'bg-[#252836] text-[#6b7084]')
+                      }
+                    >
+                      {status === 'done' ? '✓ ' : status === 'researching' ? '◌ ' : status === 'error' ? '✗ ' : ''}
+                      {sec.charAt(0).toUpperCase() + sec.slice(1)}
+                      {p?.filled ? ` (${p.filled})` : ''}
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-[#6b7084] text-xs mt-2 text-center">
-                AI is researching all 15 sections... This may take 30-60 seconds.
-              </p>
             </div>
           )}
 
