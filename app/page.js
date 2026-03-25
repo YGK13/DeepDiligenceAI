@@ -16,6 +16,7 @@ import { useState, useCallback, useMemo } from 'react';
 // LAYOUT COMPONENTS
 // ============================================================
 import AppShell from '@/components/layout/AppShell';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 // ============================================================
 // MODALS
@@ -33,6 +34,9 @@ import TimelineView from '@/components/views/TimelineView';
 import ScoringModelEditor from '@/components/views/ScoringModelEditor';
 import SettingsView from '@/components/views/SettingsView';
 import ReferenceCheckView from '@/components/views/ReferenceCheckView';
+import DeckUploadPanel from '@/components/deck/DeckUploadPanel';
+import IntegrationPanel from '@/components/integrations/IntegrationPanel';
+import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
 // ============================================================
 // SECTION COMPONENTS — all 16 DD categories
@@ -62,6 +66,7 @@ import {
 import { useSupabaseAuth } from '@/lib/hooks/useSupabaseAuth';
 import { useCompanies } from '@/lib/hooks/useCompanies';
 import { useSettings } from '@/lib/hooks/useSettings';
+import { useSubscription } from '@/lib/hooks/useSubscription';
 import { calculateOverallScore, calculateCompletionStats } from '@/lib/scoring';
 
 // ============================================================
@@ -113,6 +118,9 @@ export default function HomePage() {
   } = useCompanies(user);
   const { settings, loading: settingsLoading, saveSettings } = useSettings(user);
 
+  // --- Subscription: controls feature gating ---
+  const { plan, planLabel, canAccess, isLoading: subLoading } = useSubscription(user);
+
   // --- UI state (not persisted) ---
   const [activeCompanyId, setActiveCompanyId] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -130,7 +138,7 @@ export default function HomePage() {
   // --- Derived loading state ---
   // We're "hydrated" when all async data loads have finished.
   // This prevents flash-of-empty-content on first render.
-  const isHydrated = !authLoading && !companiesLoading && !settingsLoading;
+  const isHydrated = !authLoading && !companiesLoading && !settingsLoading && !subLoading;
 
   // --- Auto-select first company when companies load ---
   // Only runs when companies change AND no company is selected
@@ -501,6 +509,7 @@ export default function HomePage() {
       return <ReportView company={company} />;
     }
     if (activeTab === 'pipeline') {
+      if (!canAccess('pipeline')) return <UpgradePrompt feature="pipeline" currentPlan={plan} />;
       return (
         <PipelineView
           companies={companies}
@@ -512,6 +521,7 @@ export default function HomePage() {
       );
     }
     if (activeTab === 'comparison') {
+      if (!canAccess('comparison')) return <UpgradePrompt feature="comparison" currentPlan={plan} />;
       return <ComparisonView companies={companies} />;
     }
     if (activeTab === 'timeline') {
@@ -537,7 +547,37 @@ export default function HomePage() {
       );
     }
     if (activeTab === 'references') {
+      if (!canAccess('references')) return <UpgradePrompt feature="references" currentPlan={plan} />;
       return <ReferenceCheckView company={company} onChange={handleSectionChange} />;
+    }
+    // ============================================================
+    // DECK UPLOAD — Premium feature (Fund+ plan)
+    // ============================================================
+    if (activeTab === 'deck') {
+      if (!canAccess('deckUpload')) return <UpgradePrompt feature="deckUpload" currentPlan={plan} />;
+      return (
+        <div className="max-w-3xl">
+          <DeckUploadPanel
+            company={company}
+            settings={settings}
+            onAutoFill={handleAutoFill}
+            onSaveResult={handleAiResult}
+          />
+        </div>
+      );
+    }
+    // ============================================================
+    // DATA INTEGRATIONS — Premium feature (Solo+ plan)
+    // ============================================================
+    if (activeTab === 'integrations') {
+      if (!canAccess('integrations')) return <UpgradePrompt feature="integrations" currentPlan={plan} />;
+      return (
+        <IntegrationPanel
+          company={company}
+          settings={settings}
+          onAutoFill={handleAutoFill}
+        />
+      );
     }
     if (activeTab === 'settings') {
       return (
@@ -590,21 +630,25 @@ export default function HomePage() {
 
   return (
     <>
-      <AppShell
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        companies={companies}
-        activeCompanyId={activeCompanyId}
-        onCompanyChange={handleCompanyChange}
-        onNewCompany={() => setShowNewModal(true)}
-        onDeleteCompany={handleDeleteCompany}
-        overallScore={overallScore}
-        completionBadges={completionBadges}
-        user={user}
-        onSignOut={signOut}
-      >
-        {renderContent()}
-      </AppShell>
+      <ErrorBoundary>
+        <AppShell
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          companies={companies}
+          activeCompanyId={activeCompanyId}
+          onCompanyChange={handleCompanyChange}
+          onNewCompany={() => setShowNewModal(true)}
+          onDeleteCompany={handleDeleteCompany}
+          overallScore={overallScore}
+          completionBadges={completionBadges}
+          user={user}
+          onSignOut={signOut}
+        >
+          <ErrorBoundary>
+            {renderContent()}
+          </ErrorBoundary>
+        </AppShell>
+      </ErrorBoundary>
 
       {/* ============================================================ */}
       {/* NEW COMPANY MODAL                                            */}
