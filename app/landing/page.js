@@ -7,7 +7,7 @@
 // Designed to convert visitors into users/customers.
 // ============================================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 // ============ FEATURE DATA ============
 const FEATURES = [
@@ -123,6 +123,30 @@ export default function LandingPage() {
   const [email, setEmail] = useState('');
   const [submitState, setSubmitState] = useState('idle'); // idle | loading | success | error
   const [submitError, setSubmitError] = useState('');
+
+  // ============ COOKIE CONSENT STATE ============
+  // Shows a fixed banner at the bottom of the page on first visit.
+  // Checks localStorage for 'duedrill_cookie_consent' to determine visibility.
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
+
+  useEffect(() => {
+    // Only show banner if user hasn't already made a choice
+    const consent = localStorage.getItem('duedrill_cookie_consent');
+    if (!consent) {
+      setShowCookieBanner(true);
+    }
+  }, []);
+
+  // ============ COOKIE CONSENT HANDLERS ============
+  const handleCookieAccept = useCallback(() => {
+    localStorage.setItem('duedrill_cookie_consent', 'accepted');
+    setShowCookieBanner(false);
+  }, []);
+
+  const handleCookieDecline = useCallback(() => {
+    localStorage.setItem('duedrill_cookie_consent', 'declined');
+    setShowCookieBanner(false);
+  }, []);
 
   // ============ WAITLIST SUBMIT HANDLER ============
   const handleWaitlistSubmit = useCallback(async (e) => {
@@ -455,15 +479,47 @@ export default function LandingPage() {
             <span className="text-[#4a7dff] font-bold">DueDrill</span>
           </div>
           <p className="text-[#6b7084] text-xs">
-            &copy; {new Date().getFullYear()} DueDrill. All rights reserved.
+            &copy; {new Date().getFullYear()} DueDrill by 5FT View Consulting. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
-            <a href="#" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
-            <a href="#" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
+            <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
+            <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
+            <a href="mailto:yuri@5ftview.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
       </footer>
+
+      {/* ============ COOKIE CONSENT BANNER ============ */}
+      {/* Fixed to bottom of screen. Shows only on first visit (no localStorage flag). */}
+      {/* Sets 'duedrill_cookie_consent' in localStorage on accept/decline. */}
+      {showCookieBanner && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e2130] border-t border-[#2d3148] shadow-2xl shadow-black/50">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Banner text with link to privacy policy */}
+            <p className="text-[#9ca0b0] text-sm text-center sm:text-left">
+              We use essential cookies to keep you signed in and provide the service.
+              No tracking or advertising cookies. See our{' '}
+              <a href="/privacy" className="text-[#4a7dff] hover:underline">Privacy Policy</a>.
+            </p>
+
+            {/* Accept / Decline buttons */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={handleCookieDecline}
+                className="px-4 py-2 text-[#9ca0b0] text-sm font-medium rounded-lg border border-[#2d3148] hover:border-[#4a7dff] hover:text-[#e8e9ed] transition-all cursor-pointer"
+              >
+                Decline
+              </button>
+              <button
+                onClick={handleCookieAccept}
+                className="px-4 py-2 bg-[#4a7dff] text-white text-sm font-semibold rounded-lg hover:bg-[#3d6be6] transition-colors cursor-pointer"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -23,6 +23,12 @@
 import { NextResponse } from 'next/server';
 import { AUTOFILL_SECTIONS, AUTOFILL_SECTION_ORDER } from '@/lib/autofill-fields';
 
+// ============ RATE LIMITING ============
+// Import the stricter AI route limiter (10 req/min per IP).
+// Each autofill request burns expensive AI API credits, so we need to prevent
+// abuse from bots or runaway client-side loops.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============ PROVIDER CONFIGURATIONS ============
 // Same structure as /api/ai/research but with higher token limits
 // because structured JSON output is longer than prose.
@@ -335,6 +341,28 @@ async function callProvider(config, apiKey, model, prompt) {
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ---- Rate Limit Check ----
+    // Check BEFORE parsing the body — no point wasting CPU on a rate-limited request.
+    // Returns 429 Too Many Requests with retry info if the client has exceeded 10 req/min.
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((resetAt.getTime() - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': resetAt.toISOString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const {
       companyName,
