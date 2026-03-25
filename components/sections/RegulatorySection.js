@@ -60,7 +60,7 @@ export default function RegulatorySection({ data, onChange, company, settings, o
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Regulatory & Compliance" subtitle="FDA status, data privacy compliance, and regulatory risk assessment">
+      <Card title="Regulatory & Compliance" subtitle="FDA status, data privacy compliance, and regulatory risk assessment" sectionId="regulatory">
         {/* --------------------------------------------------------
             Grid layout — regulatory status fields
             -------------------------------------------------------- */}

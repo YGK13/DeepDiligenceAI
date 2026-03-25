@@ -80,7 +80,7 @@ export default function ProductSection({ data, onChange, company, settings, onAi
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Product & Technology" subtitle="Product maturity, tech stack, defensibility, and roadmap">
+      <Card title="Product & Technology" subtitle="Product maturity, tech stack, defensibility, and roadmap" sectionId="product">
         {/* --------------------------------------------------------
             Grid layout — product classification fields
             -------------------------------------------------------- */}

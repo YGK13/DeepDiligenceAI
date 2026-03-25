@@ -18,12 +18,13 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { PROVIDERS } from '@/lib/constants';
+import ExportPanel from '@/components/export/ExportPanel';
 
 // ============ PROVIDER KEYS (ordered for tab rendering) ============
 const PROVIDER_KEYS = ['perplexity', 'anthropic', 'openai', 'groq'];
 
 // ============ COMPONENT ============
-export default function SettingsView({ settings, onSave, onExport, onImport }) {
+export default function SettingsView({ settings, onSave, onExport, onImport, companies, currentCompany }) {
   // ============ LOCAL STATE ============
   // Initialize from props to allow editing without immediately saving.
   // User must explicitly click "Save" to persist changes.
@@ -49,6 +50,10 @@ export default function SettingsView({ settings, onSave, onExport, onImport }) {
 
   // Track save confirmation state
   const [showSaved, setShowSaved] = useState(false);
+
+  // ============ SPREADSHEET EXPORT TOGGLE ============
+  // Controls visibility of the inline ExportPanel for CSV/spreadsheet exports
+  const [showSpreadsheetExport, setShowSpreadsheetExport] = useState(false);
 
   // File input ref for JSON import
   const fileInputRef = useRef(null);
@@ -196,25 +201,14 @@ export default function SettingsView({ settings, onSave, onExport, onImport }) {
                 </h3>
               </div>
 
-              {/* API Key input — password type for security */}
-              <div className="mb-3">
-                <label className="block text-[#9ca0b0] text-xs font-medium mb-1.5">
-                  API Key
-                </label>
-                <input
-                  type="password"
-                  value={apiKeys[provKey] || ''}
-                  onChange={(e) => handleApiKeyChange(provKey, e.target.value)}
-                  placeholder={provConfig.keyPlaceholder || `Enter your ${provConfig.label} API key...`}
-                  className={
-                    'w-full bg-[#252836] border border-[#2d3148] text-[#e8e9ed] ' +
-                    'rounded-md text-sm px-3 py-2 ' +
-                    'focus:border-[#4a7dff] outline-none transition-colors duration-200 ' +
-                    'placeholder:text-[#6b7084]'
-                  }
-                />
-                <p className="text-[#6b7084] text-[10px] mt-1">
-                  For production, set server environment variables instead of storing keys client-side.
+              {/* API Key status — server-managed, not user-entered */}
+              <div className="mb-3 px-3 py-2.5 bg-[#34d399]/10 border border-[#34d399]/30 rounded-md">
+                <p className="text-[#34d399] text-xs font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#34d399]" />
+                  API key managed by DueDrill
+                </p>
+                <p className="text-[#34d399]/70 text-[11px] mt-0.5">
+                  AI credits are included in your plan. No API key needed.
                 </p>
               </div>
 
@@ -331,6 +325,60 @@ export default function SettingsView({ settings, onSave, onExport, onImport }) {
             className="hidden"
             aria-label="Import data JSON file"
           />
+        </div>
+
+        {/* ============ SPREADSHEET EXPORT ============ */}
+        {/* Separate from the JSON backup — this produces a polished, IC-meeting-ready CSV */}
+        <div className="mt-5 pt-4 border-t border-[#2d3148]">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-[#e8e9ed] text-sm font-semibold flex items-center gap-2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#34d399"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Spreadsheet Export
+              </h3>
+              <p className="text-[#6b7084] text-[11px] mt-0.5">
+                Export polished CSV files for IC meetings and partner sharing
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSpreadsheetExport((prev) => !prev)}
+              className={
+                'inline-flex items-center justify-center gap-1.5 ' +
+                'font-semibold rounded-lg border ' +
+                'py-2 px-4 text-sm transition-all duration-200 cursor-pointer ' +
+                (showSpreadsheetExport
+                  ? 'bg-[#34d399]/20 text-[#34d399] border-[#34d399]/30 hover:bg-[#34d399]/30'
+                  : 'bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30 hover:bg-[#34d399]/20')
+              }
+            >
+              {showSpreadsheetExport ? 'Hide' : 'Export to Spreadsheet'}
+            </button>
+          </div>
+
+          {/* Inline ExportPanel — slides open when toggled */}
+          {showSpreadsheetExport && (
+            <div className="mt-3">
+              <ExportPanel
+                companies={companies || []}
+                currentCompany={currentCompany || null}
+                onClose={() => setShowSpreadsheetExport(false)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

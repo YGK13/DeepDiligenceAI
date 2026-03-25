@@ -66,7 +66,7 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Deal Terms" subtitle="Investment structure, valuation, allocation, and key legal terms">
+      <Card title="Deal Terms" subtitle="Investment structure, valuation, allocation, and key legal terms" sectionId="deal">
         {/* --------------------------------------------------------
             Grid layout — core deal parameters
             -------------------------------------------------------- */}

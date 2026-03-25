@@ -66,7 +66,7 @@ export default function InvestorsSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Investors & Syndicate" subtitle="Lead investor, syndicate quality, board composition, and strategic value">
+      <Card title="Investors & Syndicate" subtitle="Lead investor, syndicate quality, board composition, and strategic value" sectionId="investors">
         {/* --------------------------------------------------------
             Grid layout — investor classification
             -------------------------------------------------------- */}

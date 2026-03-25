@@ -55,7 +55,7 @@ export default function IPSection({ data, onChange, company, settings, onAiResul
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Intellectual Property" subtitle="Patents, trade secrets, proprietary data, and IP risks">
+      <Card title="Intellectual Property" subtitle="Patents, trade secrets, proprietary data, and IP risks" sectionId="ip">
         {/* --------------------------------------------------------
             Grid layout — patent counts and IP classification
             -------------------------------------------------------- */}

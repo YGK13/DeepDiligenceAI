@@ -15,6 +15,44 @@
 // ============================================================================
 
 import React, { useMemo, useState, useCallback } from 'react';
+
+// ============ INLINE CSV EXPORT HELPER ============
+// Quick single-company export function used by the dashboard "Export CSV" button.
+// Calls the same API route as ExportPanel but skips the full panel UI for speed.
+async function exportSingleCompanyCSV(company) {
+  const response = await fetch('/api/export/spreadsheet', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      companies: [company],
+      format: 'csv',
+      mode: 'single',
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Export failed');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+
+  // Extract filename from header
+  const disposition = response.headers.get('Content-Disposition') || '';
+  const filenameMatch = disposition.match(/filename="?([^";\n]+)"?/);
+  const filename = filenameMatch?.[1] || `DueDrill-Export.csv`;
+
+  // Trigger download
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  return filename;
+}
 import {
   calculateOverallScore,
   getScoreColor,
@@ -56,6 +94,28 @@ function getScoreHex(score) {
 
 // ============ COMPONENT ============
 export default function DashboardView({ company, onResearchAll }) {
+  // ============ CSV EXPORT STATE ============
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
+  const [csvExportMsg, setCsvExportMsg] = useState(''); // success or error message
+
+  // ============ CSV EXPORT HANDLER ============
+  // Quick single-company export — no modal, no panel, just download
+  const handleExportCSV = useCallback(async () => {
+    if (!company) return;
+    setIsExportingCSV(true);
+    setCsvExportMsg('');
+    try {
+      const filename = await exportSingleCompanyCSV(company);
+      setCsvExportMsg(`Exported: ${filename}`);
+      setTimeout(() => setCsvExportMsg(''), 4000);
+    } catch (err) {
+      setCsvExportMsg('Export failed');
+      setTimeout(() => setCsvExportMsg(''), 4000);
+    } finally {
+      setIsExportingCSV(false);
+    }
+  }, [company]);
+
   // ============ RESEARCH ALL STATE ============
   const [isResearching, setIsResearching] = useState(false);
   const [researchResult, setResearchResult] = useState(null);
@@ -280,6 +340,44 @@ export default function DashboardView({ company, onResearchAll }) {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* ============ SECTION 0C: QUICK EXPORT BAR ============ */}
+      {/* Small export button for single-company CSV — positioned between metrics and score */}
+      <div className="flex items-center justify-end gap-2">
+        {csvExportMsg && (
+          <span className="text-[#34d399] text-[11px] font-medium animate-pulse">
+            {csvExportMsg}
+          </span>
+        )}
+        <button
+          onClick={handleExportCSV}
+          disabled={isExportingCSV || !company}
+          className={
+            'inline-flex items-center gap-1.5 ' +
+            'font-semibold rounded-lg border ' +
+            'py-1.5 px-3 text-xs transition-all duration-200 cursor-pointer ' +
+            (isExportingCSV
+              ? 'bg-[#34d399]/10 text-[#34d399]/50 border-[#34d399]/20 cursor-not-allowed'
+              : 'bg-[#34d399]/10 text-[#34d399] border-[#34d399]/30 hover:bg-[#34d399]/20 active:bg-[#34d399]/30')
+          }
+        >
+          {isExportingCSV ? (
+            <>
+              <span className="w-2.5 h-2.5 rounded-full border-2 border-[#34d399]/30 border-t-[#34d399] animate-spin" />
+              Exporting...
+            </>
+          ) : (
+            <>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export CSV
+            </>
+          )}
+        </button>
       </div>
 
       {/* ============ SECTION 1: OVERALL SCORE ============ */}

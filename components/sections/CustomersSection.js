@@ -65,7 +65,7 @@ export default function CustomersSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Customers & Partnerships" subtitle="Customer base quality, key logos, case studies, and partnerships">
+      <Card title="Customers & Partnerships" subtitle="Customer base quality, key logos, case studies, and partnerships" sectionId="customers">
         {/* --------------------------------------------------------
             Grid layout — customer classification
             -------------------------------------------------------- */}

@@ -116,23 +116,26 @@ const PROVIDER_CONFIGS = {
 };
 
 // ============ RESOLVE PROVIDER & API KEY ============
-// Priority: Perplexity (has web search) > Anthropic > OpenAI > Groq
-// Accepts explicit provider override from request body.
-function resolveProvider(requestedProvider, clientApiKeys) {
-  // If a specific provider was requested and has a key, use it
+// SERVER-SIDE ONLY: API keys come from environment variables, never from
+// the client. The user pays for DueDrill; we pay for AI tokens.
+// This prevents API key leakage and simplifies the UX — no "enter your key" step.
+//
+// Priority: Perplexity (has web search = critical for DD) > Anthropic > OpenAI > Groq
+function resolveProvider(requestedProvider) {
+  // If a specific provider was requested and has a server-side key, use it
   if (requestedProvider && PROVIDER_CONFIGS[requestedProvider]) {
     const config = PROVIDER_CONFIGS[requestedProvider];
-    const apiKey = process.env[config.envKey] || clientApiKeys?.[requestedProvider];
+    const apiKey = process.env[config.envKey];
     if (apiKey) {
       return { provider: requestedProvider, config, apiKey };
     }
   }
 
-  // Auto-detect: try providers in priority order
+  // Auto-detect: try providers in priority order using SERVER env vars only
   const priority = ['perplexity', 'anthropic', 'openai', 'groq'];
   for (const provKey of priority) {
     const config = PROVIDER_CONFIGS[provKey];
-    const apiKey = process.env[config.envKey] || clientApiKeys?.[provKey];
+    const apiKey = process.env[config.envKey];
     if (apiKey) {
       return { provider: provKey, config, apiKey };
     }
@@ -389,14 +392,14 @@ export async function POST(request) {
     }
 
     // ---- Resolve provider ----
-    const resolved = resolveProvider(requestedProvider, clientApiKeys);
+    const resolved = resolveProvider(requestedProvider);
     if (!resolved) {
       return NextResponse.json(
         {
           success: false,
-          error: 'No AI provider API key found. Configure at least one provider key in Settings or as an environment variable.',
+          error: 'No AI provider configured on the server. Contact support@duedrill.com.',
         },
-        { status: 401 }
+        { status: 503 }
       );
     }
 

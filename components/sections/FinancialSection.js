@@ -33,7 +33,7 @@ export default function FinancialSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Financials" subtitle="Fundraising history, burn rate, runway, and financial projections">
+      <Card title="Financials" subtitle="Fundraising history, burn rate, runway, and financial projections" sectionId="financial">
         {/* --------------------------------------------------------
             Grid layout — key financial metrics
             -------------------------------------------------------- */}

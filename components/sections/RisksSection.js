@@ -49,7 +49,7 @@ export default function RisksSection({ data, onChange, company, settings, onAiRe
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Risk Assessment" subtitle="Comprehensive risk evaluation, mitigants, and deal breakers">
+      <Card title="Risk Assessment" subtitle="Comprehensive risk evaluation, mitigants, and deal breakers" sectionId="risks">
         {/* --------------------------------------------------------
             Grid layout — overall risk classification
             -------------------------------------------------------- */}

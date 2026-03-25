@@ -34,7 +34,7 @@ export default function LegalSection({ data, onChange, company, settings, onAiRe
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Legal Structure" subtitle="Corporate structure, litigation, IP assignments, contracts, and legal risks">
+      <Card title="Legal Structure" subtitle="Corporate structure, litigation, IP assignments, contracts, and legal risks" sectionId="legal">
         {/* --------------------------------------------------------
             Grid layout — corporate structure basics
             -------------------------------------------------------- */}

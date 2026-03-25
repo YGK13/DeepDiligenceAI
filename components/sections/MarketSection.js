@@ -47,7 +47,7 @@ export default function MarketSection({ data, onChange, company, settings, onAiR
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Market Opportunity" subtitle="TAM/SAM/SOM, growth rates, timing, and market dynamics">
+      <Card title="Market Opportunity" subtitle="TAM/SAM/SOM, growth rates, timing, and market dynamics" sectionId="market">
         {/* --------------------------------------------------------
             Grid layout — market sizing and classification
             -------------------------------------------------------- */}

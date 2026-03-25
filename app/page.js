@@ -719,6 +719,8 @@ export default function HomePage() {
           onSave={handleSaveSettings}
           onExport={handleExportData}
           onImport={handleImportData}
+          companies={companies}
+          currentCompany={company}
         />
       );
     }

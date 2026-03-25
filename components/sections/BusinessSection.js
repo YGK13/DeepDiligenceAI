@@ -49,7 +49,7 @@ export default function BusinessSection({ data, onChange, company, settings, onA
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Business Model" subtitle="Revenue model, pricing, unit economics, and growth strategy">
+      <Card title="Business Model" subtitle="Revenue model, pricing, unit economics, and growth strategy" sectionId="business">
         {/* --------------------------------------------------------
             Grid layout — business model and unit economics
             -------------------------------------------------------- */}

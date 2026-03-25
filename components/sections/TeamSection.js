@@ -46,7 +46,7 @@ export default function TeamSection({ data, onChange, company, settings, onAiRes
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Team & Founders" subtitle="Founding team backgrounds, key hires, advisors, and board composition">
+      <Card title="Team & Founders" subtitle="Founding team backgrounds, key hires, advisors, and board composition" sectionId="team">
         {/* --------------------------------------------------------
             Grid layout — founder details and team metrics
             -------------------------------------------------------- */}

@@ -50,8 +50,10 @@ export default function AIResearchPanel({
     groq: 'Groq',
   }[activeProvider] || activeProvider;
 
-  // ============ CHECK API KEY STATUS ============
-  const hasApiKey = !!(settings?.apiKeys?.[activeProvider]);
+  // ============ API KEY STATUS ============
+  // Keys are now server-side only — always "configured" from the user's perspective.
+  // The server will return 503 if no key is actually set on the backend.
+  const hasApiKey = true;
 
   // ============ GET COMPANY NAME ============
   const companyName = company?.overview?.companyName || company?.overview?.name || company?.name || '';

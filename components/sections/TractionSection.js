@@ -32,7 +32,7 @@ export default function TractionSection({ data, onChange, company, settings, onA
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Traction & Metrics" subtitle="Revenue, growth rates, user engagement, retention, and pipeline">
+      <Card title="Traction & Metrics" subtitle="Revenue, growth rates, user engagement, retention, and pipeline" sectionId="traction">
         {/* --------------------------------------------------------
             Grid layout — all quantitative traction metrics
             These are the numbers investors care about most

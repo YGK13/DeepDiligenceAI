@@ -48,7 +48,7 @@ export default function CompetitiveSection({ data, onChange, company, settings, 
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Competitive Landscape" subtitle="Direct and indirect competitors, win rates, positioning, and moat">
+      <Card title="Competitive Landscape" subtitle="Direct and indirect competitors, win rates, positioning, and moat" sectionId="competitive">
         {/* --------------------------------------------------------
             Grid layout — key competitive metrics
             -------------------------------------------------------- */}

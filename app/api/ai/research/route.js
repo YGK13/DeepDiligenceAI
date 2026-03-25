@@ -193,7 +193,7 @@ export async function POST(request) {
 
     // ---- Parse and validate request body ----
     const body = await request.json();
-    const { provider, model, companyContext, sectionLabel, customPrompt, apiKey: clientApiKey } = body;
+    const { provider, model, companyContext, sectionLabel, customPrompt } = body;
 
     // Validate that we have a supported provider
     if (!provider || !PROVIDER_CONFIGS[provider]) {
@@ -214,18 +214,16 @@ export async function POST(request) {
     // ---- Resolve provider configuration ----
     const config = PROVIDER_CONFIGS[provider];
 
-    // API Key Resolution Strategy (in priority order):
-    // 1. Server environment variable (production — most secure)
-    // 2. Client-provided key from request body (development / self-hosted)
-    // In production with Supabase, keys will be stored encrypted server-side
-    const apiKey = process.env[config.envKey] || clientApiKey;
+    // API Key: SERVER-SIDE ONLY. Users pay for DueDrill; we pay for AI tokens.
+    // Keys live in environment variables, never exposed to the client.
+    const apiKey = process.env[config.envKey];
     if (!apiKey) {
       return NextResponse.json(
         {
           success: false,
-          error: `No API key found for ${provider}. Either set ${config.envKey} in your .env.local file, or enter your key in Settings.`,
+          error: `AI provider not configured. Contact support@duedrill.com.`,
         },
-        { status: 401 }
+        { status: 503 }
       );
     }
 

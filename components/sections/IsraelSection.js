@@ -73,7 +73,7 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Israel Nexus" subtitle="Dual-entity structure, IIA grants, Section 102, transfer pricing, and US strategy">
+      <Card title="Israel Nexus" subtitle="Dual-entity structure, IIA grants, Section 102, transfer pricing, and US strategy" sectionId="israel">
         {/* --------------------------------------------------------
             Grid layout — entity structure and Israeli programs
             -------------------------------------------------------- */}
