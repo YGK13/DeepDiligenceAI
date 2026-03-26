@@ -35,12 +35,15 @@ import DashboardView from '@/components/views/DashboardView';
 import ReportView from '@/components/views/ReportView';
 import ComparisonView from '@/components/views/ComparisonView';
 import PipelineView from '@/components/views/PipelineView';
+import AnalyticsView from '@/components/views/AnalyticsView';
 import TimelineView from '@/components/views/TimelineView';
 import ScoringModelEditor from '@/components/views/ScoringModelEditor';
 import SettingsView from '@/components/views/SettingsView';
 import ReferenceCheckView from '@/components/views/ReferenceCheckView';
+import ContactsView from '@/components/views/ContactsView';
 import DeckUploadPanel from '@/components/deck/DeckUploadPanel';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
+import DocumentVault from '@/components/views/DocumentVault';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
 // ============================================================
@@ -594,7 +597,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state with demo option
-    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -653,6 +656,9 @@ export default function HomePage() {
         />
       );
     }
+    if (activeTab === 'analytics') {
+      return <AnalyticsView companies={companies} />;
+    }
     if (activeTab === 'comparison') {
       if (!canAccess('comparison')) return <UpgradePrompt feature="comparison" currentPlan={plan} />;
       return <ComparisonView companies={companies} />;
@@ -682,6 +688,18 @@ export default function HomePage() {
     if (activeTab === 'references') {
       if (!canAccess('references')) return <UpgradePrompt feature="references" currentPlan={plan} />;
       return <ReferenceCheckView company={company} onChange={handleSectionChange} />;
+    }
+    // ============================================================
+    // CONTACTS — Per-company contact & relationship management
+    // ============================================================
+    if (activeTab === 'contacts') {
+      return <ContactsView company={company} onChange={handleSectionChange} />;
+    }
+    // ============================================================
+    // DOCUMENT VAULT — Per-company document storage
+    // ============================================================
+    if (activeTab === 'documents') {
+      return <DocumentVault company={company} onChange={handleSectionChange} />;
     }
     // ============================================================
     // DECK UPLOAD — Premium feature (Fund+ plan)
