@@ -44,6 +44,7 @@ import ContactsView from '@/components/views/ContactsView';
 import DeckUploadPanel from '@/components/deck/DeckUploadPanel';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import DocumentVault from '@/components/views/DocumentVault';
+import MonitoringView from '@/components/views/MonitoringView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
 // ============================================================
@@ -76,6 +77,7 @@ import { useCompanies } from '@/lib/hooks/useCompanies';
 import { useSettings } from '@/lib/hooks/useSettings';
 import { useSubscription } from '@/lib/hooks/useSubscription';
 import { calculateOverallScore, calculateCompletionStats } from '@/lib/scoring';
+import { SECTION_SCORE_FIELDS } from '@/lib/constants';
 
 // ============================================================
 // DEMO COMPANY — pre-loaded realistic data for first-time users
@@ -378,12 +380,28 @@ export default function HomePage() {
       // or fields that the user hasn't manually edited.
       // AI returns "" for unknown fields, so we skip those.
       const merged = { ...currentData };
+
+      // ---- Extract suggestedScore before merging fields ----
+      // The AI returns suggestedScore as a top-level integer in the section data.
+      // We pull it out and apply it to the correct score field (e.g., teamCompleteness).
+      const suggestedScore = aiData.suggestedScore;
+
       for (const [key, value] of Object.entries(aiData)) {
+        // Skip suggestedScore — it's metadata, not a form field
+        if (key === 'suggestedScore') continue;
         if (value !== '' && value !== null && value !== undefined) {
           // Overwrite the field with AI data (even if user had something there)
           // because the user explicitly clicked "Auto-Fill"
           merged[key] = value;
         }
+      }
+
+      // ---- Apply AI-suggested score to the section's score field ----
+      // e.g., for team section: merged.teamCompleteness = 7
+      // Only apply if we got a valid integer 1-10 from the AI
+      const scoreField = SECTION_SCORE_FIELDS[sectionId];
+      if (scoreField && suggestedScore != null && Number.isInteger(suggestedScore) && suggestedScore >= 1 && suggestedScore <= 10) {
+        merged[scoreField] = suggestedScore;
       }
 
       // Update the company section with merged data
@@ -471,12 +489,26 @@ export default function HomePage() {
             const merged = { ...currentData };
             let sectionFilled = 0;
 
+            // ---- Extract suggestedScore before merging fields ----
+            const suggestedScore = result.data.suggestedScore;
+
             for (const [key, value] of Object.entries(result.data)) {
+              // Skip suggestedScore — it's metadata, not a form field
+              if (key === 'suggestedScore') continue;
               if (value !== '' && value !== null && value !== undefined) {
                 merged[key] = value;
                 sectionFilled++;
                 totalFilled++;
               }
+            }
+
+            // ---- Apply AI-suggested score to the section's score field ----
+            // e.g., for market section: merged.marketScore = 6
+            const scoreField = SECTION_SCORE_FIELDS[sectionKey];
+            if (scoreField && suggestedScore != null && Number.isInteger(suggestedScore) && suggestedScore >= 1 && suggestedScore <= 10) {
+              merged[scoreField] = suggestedScore;
+              sectionFilled++;
+              totalFilled++;
             }
 
             handleSectionChange(sectionKey, merged);
@@ -658,6 +690,19 @@ export default function HomePage() {
     }
     if (activeTab === 'analytics') {
       return <AnalyticsView companies={companies} />;
+    }
+    // ============================================================
+    // MONITORING — Post-DD company monitoring & alerts dashboard
+    // ============================================================
+    if (activeTab === 'monitoring') {
+      return (
+        <MonitoringView
+          companies={companies}
+          company={company}
+          settings={settings}
+          onChange={handleSectionChange}
+        />
+      );
     }
     if (activeTab === 'comparison') {
       if (!canAccess('comparison')) return <UpgradePrompt feature="comparison" currentPlan={plan} />;

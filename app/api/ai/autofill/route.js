@@ -169,6 +169,12 @@ CRITICAL RULES:
 11. Be as specific and factual as possible. Cite numbers, names, dates, and data points.
 12. If the company is not well-known, do your best with publicly available information.
 13. Be HONEST about confidence — "verified" should only be used when you truly found corroborating sources.
+14. Also provide a top-level "suggestedScore" field (integer 1-10) rating the overall quality/strength of this section based on the data you found. Be honest and calibrated — a 7 is good, 8 is strong, 9 is exceptional. Most companies should score 5-7. Use this rubric:
+   - 9-10: World-class / best-in-class (top 1% of startups — prior unicorn founders, $100B+ TAM, >3x YoY growth)
+   - 7-8: Strong / impressive (experienced team with exits, large growing market, solid traction)
+   - 5-6: Average / acceptable (decent but unremarkable, gaps present, needs more evidence)
+   - 3-4: Below average / concerning (thin backgrounds, small or saturated market, weak metrics)
+   - 1-2: Poor / major red flags (no relevant experience, no product, no traction, legal issues)
 
 You are researching real companies using real, publicly available data. Be thorough.`;
 
@@ -186,11 +192,14 @@ function buildSectionPrompt(companyName, companyUrl, sectionKey) {
 
 Return a JSON object with EXACTLY these fields. Each field value MUST be an object with "value" and "confidence" keys:
 {
-${fieldSpecs.join(',\n')}
+${fieldSpecs.join(',\n')},
+  "suggestedScore": <integer 1-10 rating the overall quality/strength of this section>
 }
 
 Example format for each field: { "value": "actual data here", "confidence": "verified" }
 Confidence levels: "verified" (2+ sources), "likely" (1 source), "inferred" (educated guess), "unknown" (no data, value="")
+
+The "suggestedScore" is a plain integer (not an object) — your honest assessment of how strong this section is for this company. Most companies score 5-7. Be calibrated.
 
 Return ONLY the JSON object, nothing else. Every field must be present.`;
 }
@@ -214,9 +223,9 @@ function buildAllSectionsPrompt(companyName, companyUrl) {
 
 Return a JSON object structured as:
 {
-  "overview": { ... fields ... },
-  "team": { ... fields ... },
-  "product": { ... fields ... },
+  "overview": { ... fields ..., "suggestedScore": <integer 1-10> },
+  "team": { ... fields ..., "suggestedScore": <integer 1-10> },
+  "product": { ... fields ..., "suggestedScore": <integer 1-10> },
   ... and so on for all sections
 }
 
@@ -226,6 +235,8 @@ ${JSON.stringify(allSpecs, null, 2)}
 Each field value MUST be an object with "value" and "confidence" keys.
 Example: { "ceoName": { "value": "Patrick Collison", "confidence": "verified" } }
 Confidence levels: "verified" (2+ sources), "likely" (1 source), "inferred" (educated guess), "unknown" (no data, value="")
+
+IMPORTANT: Each section MUST also include a "suggestedScore" key — a plain integer (1-10), NOT an object — rating the overall quality/strength of that section. Most companies score 5-7. Be calibrated and honest.
 
 Return ONLY the JSON object. Every field must be present in every section. Be thorough — research everything available about this company.`;
 }
