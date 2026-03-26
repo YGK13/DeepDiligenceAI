@@ -13,6 +13,7 @@
 // ============================================================================
 
 import { useMemo } from 'react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import { NAV_ITEMS, SECTION_LABELS } from '@/lib/constants';
 
 // ============ COMPONENT ============
@@ -144,10 +145,13 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
       </nav>
 
       {/* ============ FOOTER ============ */}
-      <div className="px-3 md:px-5 py-3 border-t border-[#2d3148]">
-        <p className="hidden md:block text-[#6b7084] text-[10px] text-center">
-          v1.0.0 — DueDrill
-        </p>
+      <div className="px-3 md:px-5 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="hidden md:flex items-center justify-between">
+          <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            v1.0.0
+          </p>
+          <ThemeToggle />
+        </div>
       </div>
     </aside>
   );

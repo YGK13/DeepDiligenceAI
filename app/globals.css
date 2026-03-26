@@ -38,6 +38,50 @@
 }
 
 /* ============================================================ */
+/* LIGHT THEME — Enterprise-friendly alternative                  */
+/* Applied via data-theme="light" on <html> element               */
+/* Toggle stored in localStorage('duedrill_theme')                */
+/* ============================================================ */
+[data-theme="light"] {
+  /* --- Background layers (lightest → medium) --- */
+  --bg-primary: #f8f9fb;
+  --bg-secondary: #f0f1f4;
+  --bg-card: #ffffff;
+  --bg-input: #f0f1f4;
+
+  /* --- Borders --- */
+  --border: #d8dae0;
+
+  /* --- Text hierarchy --- */
+  --text-primary: #1a1d27;
+  --text-secondary: #5a5f73;
+  --text-muted: #8b90a0;
+
+  /* --- Accent colors stay the same for brand consistency --- */
+  --accent-blue: #3b6de6;
+  --accent-green: #059669;
+  --accent-red: #dc2626;
+  --accent-amber: #d97706;
+  --accent-purple: #7c3aed;
+  --accent-cyan: #0891b2;
+  --accent-israel: #0038b8;
+
+  /* --- Shared values --- */
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Light theme scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f0f1f4;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #c8cad0;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #a0a3b0;
+}
+
+/* ============================================================ */
 /* BASE RESETS                                                   */
 /* ============================================================ */
 *,

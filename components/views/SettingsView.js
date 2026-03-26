@@ -272,6 +272,42 @@ export default function SettingsView({ settings, onSave, onExport, onImport, com
         </div>
       </div>
 
+      {/* ============ SECTION 1B: OPTIONAL SECTIONS ============ */}
+      {/* Some DD sections are niche. Let users hide irrelevant ones
+          to keep the sidebar clean and focused on their investment thesis. */}
+      <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-5">
+        <h2 className="text-[#e8e9ed] text-base font-semibold mb-2">
+          Optional Sections
+        </h2>
+        <p className="text-[#6b7084] text-xs mb-4">
+          Hide sections that aren't relevant to your investment focus.
+        </p>
+
+        <div className="space-y-3">
+          {/* Israel Section Toggle */}
+          <label className="flex items-center justify-between cursor-pointer group">
+            <div>
+              <p className="text-[#e8e9ed] text-sm font-medium">🇮🇱 Israel Section</p>
+              <p className="text-[#6b7084] text-[11px]">Israel-specific DD (entity structure, IIA grants, R&D center)</p>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={settings?.showIsrael !== false}
+                onChange={(e) => {
+                  if (onSave) {
+                    onSave({ ...settings, showIsrael: e.target.checked });
+                  }
+                }}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#2d3148] rounded-full peer peer-checked:bg-[#4a7dff] transition-all" />
+              <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all peer-checked:translate-x-5" />
+            </div>
+          </label>
+        </div>
+      </div>
+
       {/* ============ SECTION 2: DATA MANAGEMENT ============ */}
       <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-5">
         <h2 className="text-[#e8e9ed] text-base font-semibold mb-4">
