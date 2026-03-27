@@ -34,7 +34,7 @@ export async function POST(request) {
     const user = authResult;
 
     const body = await request.json();
-    const { planId, successUrl, cancelUrl } = body;
+    const { planId, interval: billingInterval, successUrl, cancelUrl } = body;
 
     // ============ VALIDATE PLAN ============
     const plan = PLANS[planId];
@@ -42,6 +42,22 @@ export async function POST(request) {
       return NextResponse.json(
         { success: false, error: `Invalid plan: ${planId}. Use 'solo' or 'fund'.` },
         { status: 400 }
+      );
+    }
+
+    // ============ RESOLVE PRICE ID (monthly vs annual) ============
+    // The pricing page sends { interval: 'monthly' | 'annual' }.
+    // Each plan now has priceId: { monthly: 'price_xxx', annual: 'price_yyy' }.
+    // Default to monthly if no interval specified.
+    const resolvedInterval = billingInterval === 'annual' ? 'annual' : 'monthly';
+    const priceId = typeof plan.priceId === 'object'
+      ? plan.priceId[resolvedInterval]
+      : plan.priceId; // backward compat for old single-string format
+
+    if (!priceId || priceId.includes('placeholder')) {
+      return NextResponse.json(
+        { success: false, error: `${resolvedInterval} pricing for ${plan.name} is not configured yet. Set STRIPE_PRICE_${planId.toUpperCase()}_${resolvedInterval.toUpperCase()} in your environment variables.` },
+        { status: 503 }
       );
     }
 
@@ -58,10 +74,10 @@ export async function POST(request) {
       // Payment mode for one-time, subscription for recurring
       mode: 'subscription',
 
-      // The Stripe Price ID for the selected plan
+      // The Stripe Price ID — resolved above from monthly/annual toggle
       line_items: [
         {
-          price: plan.priceId,
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -82,6 +98,7 @@ export async function POST(request) {
         // so webhooks can reconcile the subscription with the user
         metadata: {
           plan: planId,
+          interval: resolvedInterval,
           source: 'duedrill_checkout',
           user_id: user.id,
         },
