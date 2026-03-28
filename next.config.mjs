@@ -11,7 +11,7 @@ const nextConfig = {
   // Pin turbopack root to this project dir — prevents parent directory
   // resolution issues when running via `npm run dev --prefix`
   turbopack: {
-    root: '.',
+    root: import.meta.dirname,
   },
 
   // ============ RESPONSE HEADERS ============
