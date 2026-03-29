@@ -81,7 +81,7 @@ const TIERS = [
     annualPrice: null,
     description: 'For large funds and institutions',
     cta: 'Contact Sales',
-    ctaLink: 'mailto:yuri@5ftview.com?subject=DueDrill Enterprise',
+    ctaLink: 'mailto:yuri@grandkruventures.com?subject=DueDrill Enterprise',
     highlighted: false,
     features: [
       'Everything in Fund, plus:',

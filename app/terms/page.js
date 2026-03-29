@@ -3,7 +3,7 @@
 // ============================================================================
 // Comprehensive Terms of Service for the DueDrill AI due diligence platform.
 // Server component — no 'use client' directive needed (static content).
-// Company: 5FT View Consulting | Contact: yuri@5ftview.com
+// Company: Grand Kru Ventures | Contact: yuri@grandkruventures.com
 // Governing Law: State of Delaware, USA
 // Last Updated: March 2026
 // ============================================================================
@@ -57,7 +57,7 @@ export default function TermsOfServicePage() {
               Last Updated: March 2026
             </p>
             <p className={`${STYLES.paragraph} mt-4`}>
-              These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you (&ldquo;User,&rdquo; &ldquo;you,&rdquo; or &ldquo;your&rdquo;) and 5FT View Consulting (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), governing your access to and use of the DueDrill platform, including the website at duedrill.com and all related applications, tools, APIs, and services (collectively, the &ldquo;Service&rdquo;).
+              These Terms of Service (&ldquo;Terms&rdquo;) constitute a legally binding agreement between you (&ldquo;User,&rdquo; &ldquo;you,&rdquo; or &ldquo;your&rdquo;) and Grand Kru Ventures (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), governing your access to and use of the DueDrill platform, including the website at duedrill.com and all related applications, tools, APIs, and services (collectively, the &ldquo;Service&rdquo;).
             </p>
             <p className={STYLES.paragraph}>
               <strong className="text-[#e8e9ed]">PLEASE READ THESE TERMS CAREFULLY BEFORE USING THE SERVICE.</strong> By creating an account, accessing, or using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms and our{' '}
@@ -149,7 +149,7 @@ export default function TermsOfServicePage() {
           <h3 className={STYLES.heading3}>4.5 Cancellation and Refunds</h3>
           <p className={STYLES.paragraph}>
             You may cancel your subscription at any time through your account settings. Upon cancellation, you will retain access to your paid plan features through the end of your current billing period. We do not provide prorated refunds for partial billing periods. For annual subscriptions cancelled within the first 14 days, you may request a full refund by contacting{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>.
           </p>
 
           {/* ============ SECTION 5: FREE TIER LIMITATIONS ============ */}
@@ -208,7 +208,7 @@ export default function TermsOfServicePage() {
 
           <h3 className={STYLES.heading3}>7.2 Our Platform</h3>
           <p className={STYLES.paragraph}>
-            The Service, including all software, algorithms, scoring methodologies, user interface designs, trademarks, logos, and documentation, is the exclusive property of 5FT View Consulting and is protected by copyright, trademark, and other intellectual property laws. Nothing in these Terms grants you any right, title, or interest in the Service itself, except for the limited right to use the Service in accordance with these Terms.
+            The Service, including all software, algorithms, scoring methodologies, user interface designs, trademarks, logos, and documentation, is the exclusive property of Grand Kru Ventures and is protected by copyright, trademark, and other intellectual property laws. Nothing in these Terms grants you any right, title, or interest in the Service itself, except for the limited right to use the Service in accordance with these Terms.
           </p>
 
           <h3 className={STYLES.heading3}>7.3 Feedback</h3>
@@ -286,7 +286,7 @@ export default function TermsOfServicePage() {
             Indemnification
           </h2>
           <p className={STYLES.paragraph}>
-            You agree to indemnify, defend, and hold harmless 5FT View Consulting, its officers, directors, employees, agents, and affiliates from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys&apos; fees) arising out of or in connection with:
+            You agree to indemnify, defend, and hold harmless Grand Kru Ventures, its officers, directors, employees, agents, and affiliates from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys&apos; fees) arising out of or in connection with:
           </p>
           <ul className={STYLES.list}>
             <li>Your use of or access to the Service</li>
@@ -306,7 +306,7 @@ export default function TermsOfServicePage() {
           <h3 className={STYLES.heading3}>12.1 By You</h3>
           <p className={STYLES.paragraph}>
             You may terminate your account and these Terms at any time by deleting your account through the Service&apos;s account settings or by contacting us at{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>. Upon termination, your right to use the Service will immediately cease.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>. Upon termination, your right to use the Service will immediately cease.
           </p>
 
           <h3 className={STYLES.heading3}>12.2 By Us</h3>
@@ -343,7 +343,7 @@ export default function TermsOfServicePage() {
           <h3 className={STYLES.heading3}>14.1 Informal Resolution</h3>
           <p className={STYLES.paragraph}>
             Before initiating any formal dispute resolution proceedings, you agree to first attempt to resolve any dispute informally by contacting us at{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>. We will attempt to resolve the dispute informally within 60 days.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>. We will attempt to resolve the dispute informally within 60 days.
           </p>
 
           <h3 className={STYLES.heading3}>14.2 Binding Arbitration</h3>
@@ -391,7 +391,7 @@ export default function TermsOfServicePage() {
             <li><strong className="text-[#e8e9ed]">Assignment:</strong> You may not assign or transfer these Terms without our prior written consent. We may assign these Terms without restriction.</li>
             <li><strong className="text-[#e8e9ed]">Force Majeure:</strong> We shall not be liable for any failure or delay in performance resulting from causes beyond our reasonable control, including natural disasters, war, terrorism, labor disputes, government actions, or internet service disruptions.</li>
             <li><strong className="text-[#e8e9ed]">Notices:</strong> We may provide notices to you via email to the address associated with your account. You may provide notices to us at{' '}
-              <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>.
+              <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>.
             </li>
           </ul>
 
@@ -404,10 +404,10 @@ export default function TermsOfServicePage() {
             If you have any questions about these Terms of Service, please contact us:
           </p>
           <div className="bg-[#1e2130] border border-[#2d3148] rounded-xl p-6 mb-8">
-            <p className="text-[#e8e9ed] text-sm font-semibold mb-2">5FT View Consulting</p>
+            <p className="text-[#e8e9ed] text-sm font-semibold mb-2">Grand Kru Ventures</p>
             <p className="text-[#9ca0b0] text-sm mb-1">
               Email:{' '}
-              <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>
+              <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>
             </p>
             <p className="text-[#9ca0b0] text-sm mb-1">
               Website:{' '}

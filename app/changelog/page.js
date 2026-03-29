@@ -176,7 +176,7 @@ export default function ChangelogPage() {
               Want to know when we ship new features? Follow our updates or reach out with feature requests.
             </p>
             <a
-              href="mailto:yuri@5ftview.com"
+              href="mailto:yuri@grandkruventures.com"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#4a7dff]/10 border border-[#4a7dff]/30 rounded-lg text-[#4a7dff] font-semibold text-sm hover:bg-[#4a7dff]/20 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -193,12 +193,12 @@ export default function ChangelogPage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-[#4a7dff] font-bold">DueDrill</span>
           <p className="text-[#6b7084] text-xs">
-            &copy; {new Date().getFullYear()} DueDrill by 5FT View Consulting. All rights reserved.
+            &copy; {new Date().getFullYear()} DueDrill by Grand Kru Ventures. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
             <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
-            <a href="mailto:yuri@5ftview.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
+            <a href="mailto:yuri@grandkruventures.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
       </footer>

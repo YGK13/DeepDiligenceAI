@@ -331,12 +331,12 @@ export default function TrustPage() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-[#4a7dff] font-bold">DueDrill</span>
           <p className="text-[#6b7084] text-xs">
-            &copy; {new Date().getFullYear()} DueDrill by 5FT View Consulting. All rights reserved.
+            &copy; {new Date().getFullYear()} DueDrill by Grand Kru Ventures. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
             <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
-            <a href="mailto:yuri@5ftview.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
+            <a href="mailto:yuri@grandkruventures.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
       </footer>

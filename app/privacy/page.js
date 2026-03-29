@@ -3,7 +3,7 @@
 // ============================================================================
 // Comprehensive privacy policy for the DueDrill AI due diligence platform.
 // Server component — no 'use client' directive needed (static content).
-// Company: 5FT View Consulting | Contact: yuri@5ftview.com
+// Company: Grand Kru Ventures | Contact: yuri@grandkruventures.com
 // Last Updated: March 2026
 // ============================================================================
 
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
               Last Updated: March 2026
             </p>
             <p className={`${STYLES.paragraph} mt-4`}>
-              This Privacy Policy describes how 5FT View Consulting (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) collects, uses, and shares information in connection with your use of the DueDrill platform (the &ldquo;Service&rdquo;), including the website at duedrill.com and any related applications, tools, or services. By accessing or using the Service, you agree to this Privacy Policy.
+              This Privacy Policy describes how Grand Kru Ventures (&ldquo;Company,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) collects, uses, and shares information in connection with your use of the DueDrill platform (the &ldquo;Service&rdquo;), including the website at duedrill.com and any related applications, tools, or services. By accessing or using the Service, you agree to this Privacy Policy.
             </p>
           </div>
 
@@ -234,7 +234,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className={STYLES.paragraph}>
             Our legal basis for processing personal data includes: (a) performance of our contract with you (providing the Service), (b) our legitimate interests (improving the Service, security), and (c) your consent (marketing communications). To exercise any of these rights, contact us at{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>. We will respond to your request within 30 days.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>. We will respond to your request within 30 days.
           </p>
 
           {/* ============ SECTION 8: CCPA COMPLIANCE ============ */}
@@ -253,7 +253,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className={STYLES.paragraph}>
             To exercise your CCPA rights, contact us at{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>. We will verify your identity before processing your request and respond within 45 days.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>. We will verify your identity before processing your request and respond within 45 days.
           </p>
 
           {/* ============ SECTION 9: INTERNATIONAL DATA TRANSFERS ============ */}
@@ -262,7 +262,7 @@ export default function PrivacyPolicyPage() {
             International Data Transfers
           </h2>
           <p className={STYLES.paragraph}>
-            5FT View Consulting is based in Israel with operations in the United States. Your data may be transferred to and processed in countries outside your country of residence, including:
+            Grand Kru Ventures is based in Israel with operations in the United States. Your data may be transferred to and processed in countries outside your country of residence, including:
           </p>
           <ul className={STYLES.list}>
             <li><strong className="text-[#e8e9ed]">Israel:</strong> Where our company is headquartered. Israel has been recognized by the European Commission as providing an adequate level of data protection.</li>
@@ -298,7 +298,7 @@ export default function PrivacyPolicyPage() {
           </h2>
           <p className={STYLES.paragraph}>
             The Service is intended for professional and business use and is not directed to individuals under the age of 18. We do not knowingly collect personal information from children under 18. If we become aware that we have inadvertently collected personal information from a child under 18, we will take steps to delete such information promptly. If you believe that a child under 18 has provided us with personal information, please contact us at{' '}
-            <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>.
+            <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>.
           </p>
 
           {/* ============ SECTION 12: CHANGES TO THIS POLICY ============ */}
@@ -327,10 +327,10 @@ export default function PrivacyPolicyPage() {
             If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
           </p>
           <div className="bg-[#1e2130] border border-[#2d3148] rounded-xl p-6 mb-8">
-            <p className="text-[#e8e9ed] text-sm font-semibold mb-2">5FT View Consulting</p>
+            <p className="text-[#e8e9ed] text-sm font-semibold mb-2">Grand Kru Ventures</p>
             <p className="text-[#9ca0b0] text-sm mb-1">
               Email:{' '}
-              <a href="mailto:yuri@5ftview.com" className={STYLES.link}>yuri@5ftview.com</a>
+              <a href="mailto:yuri@grandkruventures.com" className={STYLES.link}>yuri@grandkruventures.com</a>
             </p>
             <p className="text-[#9ca0b0] text-sm mb-1">
               Website:{' '}

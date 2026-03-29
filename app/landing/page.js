@@ -479,7 +479,7 @@ export default function LandingPage() {
             <span className="text-[#4a7dff] font-bold">DueDrill</span>
           </div>
           <p className="text-[#6b7084] text-xs">
-            &copy; {new Date().getFullYear()} DueDrill by 5FT View Consulting. All rights reserved.
+            &copy; {new Date().getFullYear()} DueDrill by Grand Kru Ventures. All rights reserved.
           </p>
           <div className="flex items-center gap-4 flex-wrap justify-center">
             <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
@@ -487,7 +487,7 @@ export default function LandingPage() {
             <a href="/trust" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Security</a>
             <a href="/faq" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">FAQ</a>
             <a href="/changelog" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Changelog</a>
-            <a href="mailto:yuri@5ftview.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
+            <a href="mailto:yuri@grandkruventures.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
       </footer>
