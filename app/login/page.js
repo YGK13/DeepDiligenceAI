@@ -65,7 +65,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4">
         <div className="w-full max-w-md text-center">
           <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
-            Deep<span className="text-[var(--accent-blue)]">Diligence</span> AI
+            Due<span className="text-[var(--accent-blue)]">Drill</span>
           </h1>
           <div className="rounded-xl p-8 border border-[var(--border)]" style={{ background: 'var(--bg-card)' }}>
             <p className="text-[var(--text-secondary)] mb-4">
@@ -168,7 +168,7 @@ export default function LoginPage() {
         {/* --- Logo / Brand --- */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-            Deep<span className="text-[var(--accent-blue)]">Diligence</span> AI
+            Due<span className="text-[var(--accent-blue)]">Drill</span>
           </h1>
           <p className="text-[var(--text-secondary)] mt-2">
             Sign in to your account
