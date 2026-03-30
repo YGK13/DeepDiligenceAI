@@ -29,6 +29,11 @@ import CompanyVerificationModal from '@/components/modals/CompanyVerificationMod
 import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 
 // ============================================================
+// GLOBAL SEARCH — cross-company search & filter overlay
+// ============================================================
+import GlobalSearch from '@/components/search/GlobalSearch';
+
+// ============================================================
 // VIEW COMPONENTS
 // ============================================================
 import DashboardView from '@/components/views/DashboardView';
@@ -45,6 +50,7 @@ import DeckUploadPanel from '@/components/deck/DeckUploadPanel';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import DocumentVault from '@/components/views/DocumentVault';
 import MonitoringView from '@/components/views/MonitoringView';
+import BulkOperationsView from '@/components/views/BulkOperationsView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 
 // ============================================================
@@ -150,6 +156,9 @@ export default function HomePage() {
   const [pendingCompanyName, setPendingCompanyName] = useState('');
   const [pendingCompanyUrl, setPendingCompanyUrl] = useState('');
 
+  // --- Global search overlay state ---
+  const [showSearch, setShowSearch] = useState(false);
+
   // --- Onboarding wizard state ---
   // Shown once for first-time users with no companies.
   // After completion or skip, localStorage flag prevents re-showing.
@@ -159,6 +168,31 @@ export default function HomePage() {
   // We're "hydrated" when all async data loads have finished.
   // This prevents flash-of-empty-content on first render.
   const isHydrated = !authLoading && !companiesLoading && !settingsLoading && !subLoading;
+
+  // ============================================================
+  // GLOBAL SEARCH — Cmd+K / Ctrl+K keyboard shortcut
+  // Opens the search overlay from anywhere in the app.
+  // ============================================================
+  useEffect(() => {
+    const handleSearchShortcut = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch((prev) => !prev);
+      }
+    };
+    document.addEventListener('keydown', handleSearchShortcut);
+    return () => document.removeEventListener('keydown', handleSearchShortcut);
+  }, []);
+
+  // ============================================================
+  // SEARCH NAVIGATION — when user clicks a search result,
+  // switch to that company + section tab
+  // ============================================================
+  const handleSearchNavigate = useCallback((companyId, sectionId) => {
+    setActiveCompanyId(companyId);
+    setActiveTab(sectionId || 'dashboard');
+    setShowSearch(false);
+  }, []);
 
   // ============================================================
   // ONBOARDING CHECK — show wizard for first-time users
@@ -629,7 +663,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state with demo option
-    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -701,6 +735,61 @@ export default function HomePage() {
           company={company}
           settings={settings}
           onChange={handleSectionChange}
+        />
+      );
+    }
+    // ============================================================
+    // BULK ACTIONS — Batch operations on multiple companies
+    // ============================================================
+    if (activeTab === 'bulk') {
+      return (
+        <BulkOperationsView
+          companies={companies}
+          settings={settings}
+          onResearchCompany={async (companyId) => {
+            // Delegate to the existing per-company research flow
+            const comp = companies.find((c) => c.id === companyId);
+            if (!comp) return;
+            const companyName = comp.overview?.companyName || comp.overview?.name || comp.name || '';
+            const companyUrl = comp.overview?.websiteUrl || comp.overview?.url || '';
+            const response = await fetch('/api/ai/autofill', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                companyName,
+                companyUrl,
+                section: 'overview',
+                provider: settings?.provider,
+                model: settings?.models?.[settings?.provider] || '',
+                apiKeys: settings?.apiKeys || {},
+              }),
+            });
+            return response.json();
+          }}
+          onDeleteCompany={async (companyId) => {
+            await deleteCompany(companyId);
+          }}
+          onUpdateCompany={(companyId, key, value) => {
+            updateCompany(companyId, key, value);
+          }}
+          onExport={(companyIds) => {
+            // Trigger JSON export for the selected companies
+            const selected = companies.filter((c) => companyIds.includes(c.id));
+            const exportData = {
+              version: '1.0.0',
+              exportedAt: new Date().toISOString(),
+              companies: selected,
+            };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+              type: 'application/json',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `duedrill-bulk-export-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
         />
       );
     }
@@ -841,6 +930,7 @@ export default function HomePage() {
           completionBadges={completionBadges}
           user={user}
           onSignOut={signOut}
+          onOpenSearch={() => setShowSearch(true)}
         >
           <ErrorBoundary>
             {renderContent()}
@@ -946,6 +1036,19 @@ export default function HomePage() {
           onSkip={() => setShowOnboarding(false)}
           onComplete={() => setShowOnboarding(false)}
           onLoadDemo={handleLoadDemo}
+        />
+      )}
+
+      {/* ============================================================ */}
+      {/* GLOBAL SEARCH OVERLAY                                        */}
+      {/* Full-screen modal for cross-company search & filter.         */}
+      {/* Triggered by Cmd+K / Ctrl+K or the search icon in TopBar.   */}
+      {/* ============================================================ */}
+      {showSearch && (
+        <GlobalSearch
+          companies={companies}
+          onNavigate={handleSearchNavigate}
+          onClose={() => setShowSearch(false)}
         />
       )}
     </>

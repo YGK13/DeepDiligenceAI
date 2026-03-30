@@ -47,6 +47,7 @@ export default function AppShell({
   completionBadges,
   user,
   onSignOut,
+  onOpenSearch,
 }) {
   return (
     // ---------- Root container ----------
@@ -80,6 +81,7 @@ export default function AppShell({
           overallScore={overallScore}
           user={user}
           onSignOut={onSignOut}
+          onOpenSearch={onOpenSearch}
         />
 
         {/* ---------- Scrollable content area ---------- */}

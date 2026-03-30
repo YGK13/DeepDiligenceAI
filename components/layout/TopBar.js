@@ -58,6 +58,7 @@ export default function TopBar({
   overallScore,
   user,
   onSignOut,
+  onOpenSearch,
 }) {
   // ---------- Handle dropdown change ----------
   // Convert the <select> string value back to the expected id type and
@@ -158,6 +159,43 @@ export default function TopBar({
             />
           </svg>
           <span className="hidden sm:inline">New Company</span>
+        </button>
+
+        {/* ---------- Global Search button ---------- */}
+        {/* Opens the cross-company search & filter overlay. Also shows
+            the Cmd+K / Ctrl+K shortcut hint on desktop. */}
+        <button
+          onClick={onOpenSearch}
+          title="Search all companies (Ctrl+K)"
+          className={
+            'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ' +
+            'bg-[#252836] text-[#9ca0b0] border border-[#2d3148] ' +
+            'hover:bg-[#2d3148] hover:text-[#e8e9ed] ' +
+            'focus:outline-none focus:ring-2 focus:ring-[#4a7dff]/50 ' +
+            'transition-colors duration-150'
+          }
+        >
+          {/* Search icon (magnifying glass) */}
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <span className="hidden md:inline text-xs">Search</span>
+          {/* Keyboard shortcut badge */}
+          <kbd
+            className="hidden md:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#1a1d27] border border-[#2d3148]"
+          >
+            Ctrl+K
+          </kbd>
         </button>
       </div>
 
