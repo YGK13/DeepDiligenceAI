@@ -19,6 +19,19 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — this route calls external AI providers using
+// server-side API keys that the app owner pays for.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — each verification request burns AI credits.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
+// ============ INPUT SANITIZATION ============
+// Sanitize company name before it reaches AI prompts.
+import { sanitizeCompanyName } from '@/lib/security/sanitize';
+
 // ============ PROVIDER CONFIGURATIONS ============
 const PROVIDER_CONFIGS = {
   perplexity: {
@@ -147,8 +160,38 @@ Format:
 // ============ ROUTE HANDLER ============
 export async function POST(request) {
   try {
+    // ---- Authentication Check ----
+    // FIRST: verify the user is logged in. This route burns expensive AI credits.
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+
+    // ---- Rate Limit Check ----
+    // Prevent abuse — each verification call hits external AI APIs.
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((resetAt.getTime() - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': resetAt.toISOString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
-    const { companyName, companyUrl, provider: requestedProvider, apiKeys: clientKeys } = body;
+    const { companyName: rawCompanyName, companyUrl, provider: requestedProvider, apiKeys: clientKeys } = body;
+
+    // ---- Sanitize user inputs ----
+    const companyName = sanitizeCompanyName(rawCompanyName);
 
     // ============ VALIDATE INPUT ============
     if (!companyName || typeof companyName !== 'string' || companyName.trim().length < 2) {

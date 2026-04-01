@@ -32,6 +32,14 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — deck analysis calls external AI providers.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — each analysis request burns AI credits.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============ PROVIDER CONFIGURATIONS ============
 // Identical structure to /api/ai/autofill/route.js — same providers, same
 // header/body builders, same text extractors. Copied here to keep the deck
@@ -245,6 +253,32 @@ async function callProvider(config, apiKey, model, systemPrompt, userPrompt) {
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ---- Authentication Check ----
+    // Verify the user is logged in before burning AI credits.
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+
+    // ---- Rate Limit Check ----
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((resetAt.getTime() - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': resetAt.toISOString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const {
       deckText,

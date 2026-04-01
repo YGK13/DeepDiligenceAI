@@ -15,11 +15,20 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — this route calls external AI providers using
+// server-side API keys that the app owner pays for.
+import { requireAuth } from '@/lib/security/session';
+
 // ============ RATE LIMITING ============
 // Import the stricter AI route limiter (10 req/min per IP).
 // Each research request burns expensive AI API credits, so we need to prevent
 // abuse from bots or runaway client-side loops.
 import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
+// ============ INPUT SANITIZATION ============
+// Sanitize company context fields before passing them to AI prompts.
+import { sanitizeCompanyName, sanitizeUrl } from '@/lib/security/sanitize';
 
 // ============ PROVIDER CONFIGURATIONS ============
 // Each provider has its own endpoint URL, auth header format, request body
@@ -169,6 +178,12 @@ function buildUserPrompt(companyContext, sectionLabel, customPrompt) {
 // builds the request, calls the external API, and returns the result.
 export async function POST(request) {
   try {
+    // ---- Authentication Check ----
+    // FIRST: verify the user is logged in. This route burns expensive AI credits.
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+
     // ---- Rate Limit Check ----
     // Check BEFORE parsing the body — no point wasting CPU on a rate-limited request.
     // Returns 429 Too Many Requests with retry info if the client has exceeded 10 req/min.
@@ -193,7 +208,15 @@ export async function POST(request) {
 
     // ---- Parse and validate request body ----
     const body = await request.json();
-    const { provider, model, companyContext, sectionLabel, customPrompt } = body;
+    const { provider, model, companyContext: rawContext, sectionLabel, customPrompt } = body;
+
+    // ---- Sanitize company context fields ----
+    // Clean user-provided company data before it reaches AI prompts.
+    const companyContext = rawContext ? {
+      ...rawContext,
+      name: rawContext.name ? sanitizeCompanyName(rawContext.name) : rawContext.name,
+      url: rawContext.url ? sanitizeUrl(rawContext.url) : rawContext.url,
+    } : rawContext;
 
     // Validate that we have a supported provider
     if (!provider || !PROVIDER_CONFIGS[provider]) {

@@ -20,6 +20,26 @@ export const metadata = {
     'deal scoring',
     'investment analysis',
   ],
+  // ============ OPEN GRAPH — Social sharing previews (LinkedIn, Twitter, Slack) ============
+  openGraph: {
+    title: 'DueDrill — AI-Powered Due Diligence',
+    description: 'Research any startup in 60 seconds. AI auto-fills 214 data fields across 16 due diligence categories with real data from the web.',
+    url: 'https://duedrill.com',
+    siteName: 'DueDrill',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DueDrill — AI-Powered Due Diligence',
+    description: 'Research any startup in 60 seconds. 16 DD categories, weighted scoring, PDF memos.',
+  },
+  // ============ ROBOTS — Allow indexing of public pages ============
+  robots: {
+    index: true,
+    follow: true,
+  },
+  metadataBase: new URL('https://duedrill.com'),
 };
 
 // ============================================================

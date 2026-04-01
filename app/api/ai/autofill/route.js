@@ -23,11 +23,22 @@
 import { NextResponse } from 'next/server';
 import { AUTOFILL_SECTIONS, AUTOFILL_SECTION_ORDER } from '@/lib/autofill-fields';
 
+// ============ AUTHENTICATION ============
+// Require a valid session before processing — this route calls external AI
+// providers using server-side API keys that the app owner pays for.
+// Without auth, anyone with the URL could drain AI credits.
+import { requireAuth } from '@/lib/security/session';
+
 // ============ RATE LIMITING ============
 // Import the stricter AI route limiter (10 req/min per IP).
 // Each autofill request burns expensive AI API credits, so we need to prevent
 // abuse from bots or runaway client-side loops.
 import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
+// ============ INPUT SANITIZATION ============
+// Sanitize user-provided company name and URL before passing to AI prompts.
+// Prevents prompt injection and ensures clean data reaches the LLM.
+import { sanitizeCompanyName, sanitizeUrl } from '@/lib/security/sanitize';
 
 // ============ PROVIDER CONFIGURATIONS ============
 // Same structure as /api/ai/research but with higher token limits
@@ -355,6 +366,13 @@ async function callProvider(config, apiKey, model, prompt) {
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ---- Authentication Check ----
+    // FIRST: verify the user is logged in before doing anything else.
+    // This route burns expensive AI credits — unauthenticated access = credit theft.
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+
     // ---- Rate Limit Check ----
     // Check BEFORE parsing the body — no point wasting CPU on a rate-limited request.
     // Returns 429 Too Many Requests with retry info if the client has exceeded 10 req/min.
@@ -379,13 +397,19 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      companyName,
-      companyUrl,
+      companyName: rawCompanyName,
+      companyUrl: rawCompanyUrl,
       section,         // 'overview', 'team', ..., or 'all'
       provider: requestedProvider,
       model,
       apiKeys: clientApiKeys,
     } = body;
+
+    // ---- Sanitize user inputs ----
+    // Clean company name and URL before they reach AI prompts or logs.
+    // Prevents prompt injection and XSS via stored data.
+    const companyName = sanitizeCompanyName(rawCompanyName);
+    const companyUrl = sanitizeUrl(rawCompanyUrl);
 
     // ---- Validate ----
     if (!companyName || !companyName.trim()) {
