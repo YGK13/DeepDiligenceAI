@@ -20,11 +20,17 @@
 // ============================================================================
 
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/security/session';
 import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
 import { importFromIntegration, INTEGRATIONS } from '@/lib/integrations';
 
 // ============ POST HANDLER ============
 export async function POST(request) {
+  // ---- Authentication Check ----
+  // Verify the user is logged in before hitting third-party APIs.
+  const authResult = await requireAuth(request);
+  if (authResult instanceof Response) return authResult;
+
   // ---- Rate Limiting ----
   // Use the stricter AI route limiter (10 req/min per IP) because each
   // search hits a third-party API that may have its own rate limits.

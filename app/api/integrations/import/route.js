@@ -20,11 +20,17 @@
 // ============================================================================
 
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/security/session';
 import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
 import { getCompanyFromIntegration, INTEGRATIONS } from '@/lib/integrations';
 
 // ============ POST HANDLER ============
 export async function POST(request) {
+  // ---- Authentication Check ----
+  // Verify the user is logged in before fetching from third-party APIs.
+  const authResult = await requireAuth(request);
+  if (authResult instanceof Response) return authResult;
+
   // ---- Rate Limiting ----
   // Same stricter limiter as the search route. Import requests are more
   // expensive (full profile fetch) so rate limiting is even more important.

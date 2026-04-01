@@ -29,6 +29,14 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — investor verification calls external AI providers.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — each verification request burns AI credits.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============================================================================
 // PROVIDER CONFIGURATIONS
 // ============================================================================
@@ -280,6 +288,28 @@ async function callProvider(config, apiKey, model, systemPrompt, userPrompt) {
 // ============================================================================
 export async function POST(request) {
   try {
+    // ============ AUTH + RATE LIMIT ============
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const {
       investors,                       // Array of { name, type }

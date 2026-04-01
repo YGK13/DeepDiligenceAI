@@ -22,6 +22,14 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — only logged-in users can upload decks.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — file uploads are resource-intensive.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============ CONSTANTS ============
 // 20MB max — pitch decks rarely exceed 10MB, but some image-heavy decks
 // can get large. 20MB is generous while still preventing abuse.
@@ -35,6 +43,28 @@ export const runtime = 'nodejs';
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ============ AUTH + RATE LIMIT ============
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
     // ---- Step 1: Parse the multipart form data ----
     // Next.js App Router supports request.formData() natively — no need for
     // external libraries like multer or busboy.

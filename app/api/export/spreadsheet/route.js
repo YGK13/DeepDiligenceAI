@@ -19,6 +19,14 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — spreadsheet exports contain sensitive DD data.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — export endpoints should not be hammered.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============ SECTION DEFINITIONS ============
 // Maps each section to its human-readable field labels.
 // Order matters — this is the order fields appear in the CSV.
@@ -651,6 +659,28 @@ function generateSingleCompanyCSV(company) {
 
 export async function POST(request) {
   try {
+    // ============ AUTH + RATE LIMIT ============
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { companies, format, mode } = body;
 

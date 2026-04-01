@@ -14,6 +14,14 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SCORE_WEIGHTS } from '@/lib/constants';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — PDF exports contain sensitive DD data.
+import { requireAuth } from '@/lib/security/session';
+
+// ============ RATE LIMITING ============
+// Prevent abuse — PDF generation is CPU-intensive.
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
+
 // ============ COLOR CONSTANTS ============
 const NAVY = [26, 35, 126];          // #1a237e — headers
 const DARK_GRAY = [55, 65, 81];      // #374151 — body text
@@ -334,6 +342,28 @@ function generateMemo(company) {
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ============ AUTH + RATE LIMIT ============
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+
+    const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
+    if (!withinLimit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfter: Math.ceil((resetAt.getTime() - Date.now()) / 1000),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { company } = body;
 

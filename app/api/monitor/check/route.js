@@ -20,6 +20,10 @@
 
 import { NextResponse } from 'next/server';
 
+// ============ AUTHENTICATION ============
+// Require a valid session — monitoring checks call external AI providers.
+import { requireAuth } from '@/lib/security/session';
+
 // ============ RATE LIMITING ============
 // Monitoring checks hit external AI APIs, so we rate-limit to prevent abuse.
 // Uses the same rateLimitByApiRoute as autofill (10 req/min per IP).
@@ -315,6 +319,11 @@ async function callProvider(config, apiKey, model, prompt) {
 // Returns: { success, alerts: [...], provider, checkedAt }
 export async function POST(request) {
   try {
+    // ---- Authentication Check ----
+    // Verify the user is logged in before burning AI credits.
+    const authResult = await requireAuth(request);
+    if (authResult instanceof Response) return authResult;
+
     // ---- Rate Limit Check ----
     const { success: withinLimit, remaining, resetAt } = rateLimitByApiRoute(request);
     if (!withinLimit) {
