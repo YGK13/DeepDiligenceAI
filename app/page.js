@@ -684,7 +684,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state with demo option
-    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk' && activeTab !== 'team') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk' && activeTab !== 'teamCollab') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -814,7 +814,7 @@ export default function HomePage() {
         />
       );
     }
-    if (activeTab === 'team') {
+    if (activeTab === 'teamCollab') {
       return <TeamCollabView user={user} />;
     }
     if (activeTab === 'comparison') {
