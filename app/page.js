@@ -51,7 +51,9 @@ import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import DocumentVault from '@/components/views/DocumentVault';
 import MonitoringView from '@/components/views/MonitoringView';
 import BulkOperationsView from '@/components/views/BulkOperationsView';
+import TeamCollabView from '@/components/views/TeamCollabView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
+import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 
 // ============================================================
 // SECTION COMPONENTS — all 16 DD categories
@@ -158,6 +160,7 @@ export default function HomePage() {
 
   // --- Global search overlay state ---
   const [showSearch, setShowSearch] = useState(false);
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
 
   // --- Onboarding wizard state ---
   // Shown once for first-time users with no companies.
@@ -182,6 +185,24 @@ export default function HomePage() {
     };
     document.addEventListener('keydown', handleSearchShortcut);
     return () => document.removeEventListener('keydown', handleSearchShortcut);
+  }, []);
+
+  // ============================================================
+  // KEYBOARD SHORTCUTS HELP — press "?" to toggle help overlay
+  // ============================================================
+  useEffect(() => {
+    const handleHelpShortcut = (e) => {
+      // Only trigger when no input is focused and no modifier keys
+      const tag = e.target.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === '?') {
+        e.preventDefault();
+        setShowShortcutsHelp((prev) => !prev);
+      }
+    };
+    document.addEventListener('keydown', handleHelpShortcut);
+    return () => document.removeEventListener('keydown', handleHelpShortcut);
   }, []);
 
   // ============================================================
@@ -663,7 +684,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state with demo option
-    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk' && activeTab !== 'team') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -792,6 +813,9 @@ export default function HomePage() {
           }}
         />
       );
+    }
+    if (activeTab === 'team') {
+      return <TeamCollabView user={user} />;
     }
     if (activeTab === 'comparison') {
       if (!canAccess('comparison')) return <UpgradePrompt feature="comparison" currentPlan={plan} />;
@@ -1051,6 +1075,14 @@ export default function HomePage() {
           onClose={() => setShowSearch(false)}
         />
       )}
+
+      {/* ============================================================ */}
+      {/* KEYBOARD SHORTCUTS HELP — press ? to toggle                  */}
+      {/* ============================================================ */}
+      <KeyboardShortcutsHelp
+        isOpen={showShortcutsHelp}
+        onClose={() => setShowShortcutsHelp(false)}
+      />
     </>
   );
 }
