@@ -18,6 +18,7 @@
 
 import { useCallback } from 'react';
 import UserMenu from '@/components/auth/UserMenu';
+import NotificationBell from '@/components/ui/NotificationBell';
 
 // ============ HELPERS ============
 
@@ -59,6 +60,12 @@ export default function TopBar({
   user,
   onSignOut,
   onOpenSearch,
+  // ---- Notification props ----
+  notifications = [],
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  onClearAllNotifications,
+  onNotificationNavigate,
 }) {
   // ---------- Handle dropdown change ----------
   // Convert the <select> string value back to the expected id type and
@@ -250,6 +257,15 @@ export default function TopBar({
             <span className="hidden sm:inline">Delete</span>
           </button>
         )}
+
+        {/* ---------- Notification Bell — shows unread count + dropdown ---------- */}
+        <NotificationBell
+          notifications={notifications}
+          onMarkRead={onMarkNotificationRead}
+          onMarkAllRead={onMarkAllNotificationsRead}
+          onClearAll={onClearAllNotifications}
+          onNavigate={onNotificationNavigate}
+        />
 
         {/* ---------- User Menu — avatar, dropdown, sign out ---------- */}
         <UserMenu user={user} signOut={onSignOut} />

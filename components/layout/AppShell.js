@@ -48,6 +48,12 @@ export default function AppShell({
   user,
   onSignOut,
   onOpenSearch,
+  // ---- Notification props (forwarded to TopBar → NotificationBell) ----
+  notifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  onClearAllNotifications,
+  onNotificationNavigate,
 }) {
   return (
     // ---------- Root container ----------
@@ -82,6 +88,11 @@ export default function AppShell({
           user={user}
           onSignOut={onSignOut}
           onOpenSearch={onOpenSearch}
+          notifications={notifications}
+          onMarkNotificationRead={onMarkNotificationRead}
+          onMarkAllNotificationsRead={onMarkAllNotificationsRead}
+          onClearAllNotifications={onClearAllNotifications}
+          onNotificationNavigate={onNotificationNavigate}
         />
 
         {/* ---------- Scrollable content area ---------- */}

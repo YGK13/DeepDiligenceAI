@@ -52,8 +52,15 @@ import DocumentVault from '@/components/views/DocumentVault';
 import MonitoringView from '@/components/views/MonitoringView';
 import BulkOperationsView from '@/components/views/BulkOperationsView';
 import TeamCollabView from '@/components/views/TeamCollabView';
+import ActivityLogView from '@/components/views/ActivityLogView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
+import ToastNotification from '@/components/ui/ToastNotification';
+
+// ============================================================
+// NOTIFICATIONS — in-app notification system
+// ============================================================
+import { createNotification } from '@/lib/notifications';
 
 // ============================================================
 // SECTION COMPONENTS — all 16 DD categories
@@ -86,6 +93,7 @@ import { useSettings } from '@/lib/hooks/useSettings';
 import { useSubscription } from '@/lib/hooks/useSubscription';
 import { calculateOverallScore, calculateCompletionStats } from '@/lib/scoring';
 import { SECTION_SCORE_FIELDS } from '@/lib/constants';
+import { createActivity } from '@/lib/activity';
 
 // ============================================================
 // DEMO COMPANY — pre-loaded realistic data for first-time users
@@ -166,6 +174,101 @@ export default function HomePage() {
   // Shown once for first-time users with no companies.
   // After completion or skip, localStorage flag prevents re-showing.
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // --- Global Activity Log state ---
+  // Top-level audit trail separate from per-company logs.
+  // Persisted to localStorage under 'duedrill_activity_log'.
+  const [activityLog, setActivityLog] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('duedrill_activity_log');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Helper to add an activity and persist to localStorage
+  const logActivity = useCallback((type, details = {}) => {
+    const activity = createActivity(type, details);
+    setActivityLog((prev) => {
+      const updated = [activity, ...prev].slice(0, 2000); // cap at 2000 entries
+      try {
+        localStorage.setItem('duedrill_activity_log', JSON.stringify(updated));
+      } catch {
+        // Silently fail if localStorage is full
+      }
+      return updated;
+    });
+  }, []);
+
+  // ============================================================
+  // NOTIFICATION STATE — persistent bell notifications
+  // Stored in localStorage under 'duedrill_notifications'.
+  // ============================================================
+  const [notifications, setNotifications] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem('duedrill_notifications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // ---- Persist notifications to localStorage whenever they change ----
+  useEffect(() => {
+    try {
+      localStorage.setItem('duedrill_notifications', JSON.stringify(notifications));
+    } catch {
+      // Silently fail if localStorage is full
+    }
+  }, [notifications]);
+
+  // ---- Toast state (ephemeral — not persisted) ----
+  const [toasts, setToasts] = useState([]);
+
+  // ---- Notification helpers ----
+  // Add a notification to the bell AND optionally show a toast
+  const addNotification = useCallback((params, { showToast = true } = {}) => {
+    const notif = createNotification(params);
+    setNotifications((prev) => [notif, ...prev].slice(0, 100)); // cap at 100
+    if (showToast) {
+      setToasts((prev) => [...prev, notif]);
+    }
+    return notif;
+  }, []);
+
+  const dismissToast = useCallback((toastId) => {
+    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  }, []);
+
+  const markNotificationRead = useCallback((notifId) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notifId ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  const markAllNotificationsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  // Navigate when clicking a notification (parse actionUrl as tab switch)
+  const handleNotificationNavigate = useCallback((actionUrl) => {
+    if (!actionUrl) return;
+    // actionUrl format: "tab:dashboard" or "tab:overview" or "company:id:tab"
+    if (actionUrl.startsWith('tab:')) {
+      setActiveTab(actionUrl.replace('tab:', ''));
+    } else if (actionUrl.startsWith('company:')) {
+      const parts = actionUrl.split(':');
+      if (parts[1]) setActiveCompanyId(parts[1]);
+      if (parts[2]) setActiveTab(parts[2]);
+    }
+  }, []);
 
   // --- Derived loading state ---
   // We're "hydrated" when all async data loads have finished.
@@ -306,8 +409,14 @@ export default function HomePage() {
 
       setActiveCompanyId(newCompany.id);
       setActiveTab('dashboard');
+
+      // --- Log activity: company created ---
+      logActivity('company-created', {
+        companyName: candidate.name,
+        companyId: newCompany.id,
+      });
     },
-    [createCompany, updateCompany]
+    [createCompany, updateCompany, logActivity]
   );
 
   // ============================================================
@@ -323,20 +432,33 @@ export default function HomePage() {
         updateCompany(newCompany.id, 'overview', { companyName: pendingCompanyName });
         setActiveCompanyId(newCompany.id);
         setActiveTab('overview'); // send to overview so they can fill details manually
+
+        // --- Log activity: company created (unverified) ---
+        logActivity('company-created', {
+          companyName: pendingCompanyName,
+          companyId: newCompany.id,
+        });
       }
     },
-    [pendingCompanyName, createCompany, updateCompany]
+    [pendingCompanyName, createCompany, updateCompany, logActivity]
   );
 
   // Delete the active company (with confirmation)
   const handleDeleteCompany = useCallback(async () => {
     if (!company) return;
+    const companyName = company.overview?.companyName || company.overview?.name || 'Unnamed';
     if (
       !window.confirm(
-        `Delete "${company.overview?.companyName || company.overview?.name || 'Unnamed'}"? This cannot be undone.`
+        `Delete "${companyName}"? This cannot be undone.`
       )
     )
       return;
+
+    // --- Log activity: company deleted (before actually deleting) ---
+    logActivity('company-deleted', {
+      companyName,
+      companyId: activeCompanyId,
+    });
 
     await deleteCompany(activeCompanyId);
 
@@ -348,7 +470,7 @@ export default function HomePage() {
       setActiveCompanyId(null);
     }
     setActiveTab('dashboard');
-  }, [company, activeCompanyId, companies, deleteCompany]);
+  }, [company, activeCompanyId, companies, deleteCompany, logActivity]);
 
   // Switch active company
   const handleCompanyChange = useCallback((companyId) => {
@@ -398,8 +520,18 @@ export default function HomePage() {
     (sectionKey, updatedData) => {
       if (!activeCompanyId) return;
       updateCompany(activeCompanyId, sectionKey, updatedData);
+
+      // --- Log activity: section edited ---
+      // Derive the company name from the current companies array
+      const comp = companies.find((c) => c.id === activeCompanyId);
+      const companyName = comp?.overview?.companyName || comp?.overview?.name || comp?.name || 'Unknown';
+      logActivity('section-edited', {
+        companyName,
+        companyId: activeCompanyId,
+        sectionKey,
+      });
     },
-    [activeCompanyId, updateCompany]
+    [activeCompanyId, updateCompany, companies, logActivity]
   );
 
   // ============================================================
@@ -473,8 +605,16 @@ export default function HomePage() {
           [sectionId]: confidenceData,
         });
       }
+
+      // --- Log activity: AI auto-fill completed for a section ---
+      const compName = company?.overview?.companyName || company?.overview?.name || 'Unknown';
+      logActivity('ai-autofill', {
+        companyName: compName,
+        companyId: activeCompanyId,
+        sectionKey: sectionId,
+      });
     },
-    [activeCompanyId, company, handleSectionChange, updateCompany]
+    [activeCompanyId, company, handleSectionChange, updateCompany, logActivity]
   );
 
   // ============================================================
@@ -618,9 +758,38 @@ export default function HomePage() {
         });
       }
 
+      // --- Log activity: AI research completed for all sections ---
+      const researchCompanyName = company?.overview?.companyName || company?.overview?.name || 'Unknown';
+      logActivity('ai-research', {
+        companyName: researchCompanyName,
+        companyId: activeCompanyId,
+        totalFilled,
+        errors,
+      });
+
+      // ---- Fire notification: AI research complete ----
+      const companyLabel = company?.overview?.companyName || 'Company';
+      if (errors === 0) {
+        addNotification({
+          type: 'research-complete',
+          title: 'AI Research Complete',
+          message: `All ${sections.length} sections researched for ${companyLabel}. ${totalFilled} fields filled.`,
+          severity: 'success',
+          actionUrl: `company:${activeCompanyId}:dashboard`,
+        });
+      } else {
+        addNotification({
+          type: 'research-complete',
+          title: 'AI Research Finished',
+          message: `Research for ${companyLabel} done with ${errors} error(s). ${totalFilled} fields filled.`,
+          severity: 'warning',
+          actionUrl: `company:${activeCompanyId}:dashboard`,
+        });
+      }
+
       return { success: errors === 0, totalFilled, errors };
     },
-    [activeCompanyId, company, settings, handleSectionChange, updateCompany]
+    [activeCompanyId, company, settings, handleSectionChange, updateCompany, logActivity, addNotification]
   );
 
   // ============================================================
@@ -652,7 +821,15 @@ export default function HomePage() {
     a.download = `deepdiligence-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [companies, settings]);
+
+    // ---- Fire notification: export ready ----
+    addNotification({
+      type: 'export-ready',
+      title: 'Export Ready',
+      message: `Exported ${companies.length} compan${companies.length === 1 ? 'y' : 'ies'} to JSON.`,
+      severity: 'success',
+    });
+  }, [companies, settings, addNotification]);
 
   const handleImportData = useCallback(
     (file) => {
@@ -684,7 +861,7 @@ export default function HomePage() {
   // ============================================================
   const renderContent = () => {
     // No company selected — show welcome state with demo option
-    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk' && activeTab !== 'teamCollab') {
+    if (!company && activeTab !== 'settings' && activeTab !== 'pipeline' && activeTab !== 'analytics' && activeTab !== 'bulk' && activeTab !== 'teamCollab' && activeTab !== 'activity') {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-8">
           <div className="text-6xl mb-4">🔍</div>
@@ -756,6 +933,16 @@ export default function HomePage() {
           company={company}
           settings={settings}
           onChange={handleSectionChange}
+          onAlert={(alert) => {
+            // Fire a notification when monitoring detects an alert
+            addNotification({
+              type: 'monitoring-alert',
+              title: alert.title || 'Monitoring Alert',
+              message: alert.message || 'A monitoring alert was triggered.',
+              severity: alert.severity || 'warning',
+              actionUrl: 'tab:monitoring',
+            });
+          }}
         />
       );
     }
@@ -816,6 +1003,12 @@ export default function HomePage() {
     }
     if (activeTab === 'teamCollab') {
       return <TeamCollabView user={user} />;
+    }
+    // ============================================================
+    // ACTIVITY LOG — Global audit trail across all companies
+    // ============================================================
+    if (activeTab === 'activity') {
+      return <ActivityLogView activityLog={activityLog} companies={companies} />;
     }
     if (activeTab === 'comparison') {
       if (!canAccess('comparison')) return <UpgradePrompt feature="comparison" currentPlan={plan} />;
