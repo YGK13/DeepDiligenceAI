@@ -10,6 +10,7 @@
 
 import React from 'react';
 import SectionHelp from '@/components/ui/SectionHelp';
+import FreshnessIndicator from '@/components/ui/FreshnessIndicator';
 
 // ============================================================
 // Card Component
@@ -21,8 +22,10 @@ import SectionHelp from '@/components/ui/SectionHelp';
 //   headerRight — optional React node rendered on the right side of the header
 //                 (use for action buttons, badges, toggles, etc.)
 //   className   — additional CSS classes to merge onto the outer container
-//   sectionId   — optional section ID (e.g., 'team', 'product'). When provided,
-//                 renders a contextual help "?" button next to the title.
+//   sectionId      — optional section ID (e.g., 'team', 'product'). When provided,
+//                    renders a contextual help "?" button next to the title.
+//   lastResearched — optional ISO 8601 timestamp string. When provided, renders a
+//                    FreshnessIndicator showing how stale the section data is.
 // ============================================================
 export default function Card({
   children,
@@ -31,6 +34,7 @@ export default function Card({
   headerRight,
   className = '',
   sectionId,
+  lastResearched,
 }) {
   // Determine if we need to render the header section at all
   // Only render when at least one header prop is provided
@@ -42,7 +46,7 @@ export default function Card({
         bg-[#1e2130]
         border border-[#2d3148]
         rounded-lg
-        p-5
+        p-4 md:p-5
         mb-4
         ${className}
       `}
@@ -62,6 +66,10 @@ export default function Card({
                 </h3>
                 {/* ---- Contextual help button — shown when sectionId is provided ---- */}
                 {sectionId && <SectionHelp sectionId={sectionId} />}
+                {/* ---- Data freshness indicator — shown when lastResearched is provided ---- */}
+                {lastResearched !== undefined && (
+                  <FreshnessIndicator timestamp={lastResearched} />
+                )}
               </div>
             )}
             {subtitle && (

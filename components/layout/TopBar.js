@@ -60,6 +60,8 @@ export default function TopBar({
   user,
   onSignOut,
   onOpenSearch,
+  // ---- Mobile drawer control ----
+  onOpenMobileDrawer,
   // ---- Notification props ----
   notifications = [],
   onMarkNotificationRead,
@@ -88,11 +90,33 @@ export default function TopBar({
     <header
       className={
         'w-full bg-[#1a1d27] border-b border-[#2d3148] ' +
-        'flex items-center justify-between px-4 md:px-6 py-3'
+        'flex items-center justify-between ' +
+        'px-3 py-2 md:px-6 md:py-3'
       }
     >
-      {/* ============ LEFT SIDE: Company Selector + New Button ============ */}
-      <div className="flex items-center gap-3">
+      {/* ============ LEFT SIDE: Hamburger + Company Selector + New Button ============ */}
+      <div className="flex items-center gap-2 md:gap-3">
+
+        {/* ---------- Mobile hamburger menu button ---------- */}
+        {/* Only visible on mobile (< md). Opens the sidebar drawer overlay. */}
+        {onOpenMobileDrawer && (
+          <button
+            onClick={onOpenMobileDrawer}
+            aria-label="Open navigation menu"
+            className={
+              'md:hidden flex items-center justify-center w-9 h-9 rounded-lg ' +
+              'bg-[#252836] border border-[#2d3148] text-[#9ca0b0] ' +
+              'hover:bg-[#2d3148] hover:text-[#e8e9ed] ' +
+              'focus:outline-none focus:ring-2 focus:ring-[#4a7dff]/50 ' +
+              'transition-colors duration-150 shrink-0'
+            }
+          >
+            {/* Hamburger icon (3 horizontal lines) */}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        )}
         {/* ---------- Company selector dropdown ---------- */}
         <div className="relative">
           <select
@@ -101,7 +125,7 @@ export default function TopBar({
             className={
               'appearance-none bg-[#252836] border border-[#2d3148] ' +
               'text-[#e8e9ed] text-sm rounded-lg ' +
-              'px-4 py-2 pr-10 min-w-[200px] md:min-w-[280px] ' +
+              'px-3 py-2 pr-10 min-w-[140px] md:min-w-[280px] max-w-[180px] md:max-w-none ' +
               'focus:outline-none focus:ring-2 focus:ring-[#4a7dff]/50 focus:border-[#4a7dff] ' +
               'cursor-pointer transition-colors duration-150'
             }
@@ -211,7 +235,7 @@ export default function TopBar({
         {/* ---------- Overall score badge ---------- */}
         <div className="flex items-center gap-2">
           {/* Score number — large, colored by threshold */}
-          <span className={`text-2xl font-bold ${scoreColor}`}>
+          <span className={`text-lg md:text-2xl font-bold ${scoreColor}`}>
             {overallScore != null ? overallScore : '--'}
           </span>
 

@@ -199,11 +199,13 @@ export default function FormField({
               step="1"
               value={numericValue}
               onChange={onChange}
-              className="score-slider w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none"
+              className="score-slider w-full h-2.5 rounded-full appearance-none cursor-pointer outline-none touch-action-none"
               style={{
                 // Two-color gradient: filled portion uses the score color,
                 // the remainder is the dark track background
                 background: `linear-gradient(to right, ${scoreColor.hex} 0%, ${scoreColor.hex} ${fillPercent}%, #2d3148 ${fillPercent}%, #2d3148 100%)`,
+                // Prevent scroll hijacking on touch devices for precise slider control
+                touchAction: 'none',
               }}
             />
 
@@ -270,6 +272,17 @@ export default function FormField({
             outline: 2px solid ${scoreColor.hex}50;
             outline-offset: 2px;
             border-radius: 9999px;
+          }
+          /* ---- Mobile: larger thumb (24px) for better touch targets ---- */
+          @media (max-width: 767px) {
+            .score-slider::-webkit-slider-thumb {
+              width: 24px;
+              height: 24px;
+            }
+            .score-slider::-moz-range-thumb {
+              width: 24px;
+              height: 24px;
+            }
           }
         `}</style>
       </div>

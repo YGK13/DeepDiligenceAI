@@ -528,7 +528,105 @@ export default function DashboardView({ company, onResearchAll }) {
         </div>
       </div>
 
-      {/* ============ SECTION 4: OVERALL VERDICT ============ */}
+      {/* ============ SECTION 4: RECENT ALERTS ============ */}
+      {/* Shows the last 5 monitoring alerts for the active company.
+          Each alert displays a severity dot, title, category badge, and
+          a relative timestamp. Empty state shown when no alerts exist. */}
+      <div>
+        <h2 className="text-[#9ca0b0] text-xs font-semibold uppercase tracking-wider mb-3 px-1">
+          Recent Alerts
+        </h2>
+        <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-4">
+          {(!company?.alerts || company.alerts.length === 0) ? (
+            /* ---- Empty state — no alerts yet ---- */
+            <div className="text-center py-6">
+              <div className="text-[#6b7084] text-2xl mb-2">🔔</div>
+              <p className="text-[#6b7084] text-sm">
+                No alerts yet — monitoring will check for changes automatically
+              </p>
+            </div>
+          ) : (
+            /* ---- Alert list — show last 5 entries ---- */
+            <div className="space-y-2.5">
+              {company.alerts.slice(-5).reverse().map((alert, idx) => {
+                // ---- Severity color mapping ----
+                // high = red, medium = amber, low = blue (informational)
+                const severityColors = {
+                  high:   '#ef4444',
+                  medium: '#f59e0b',
+                  low:    '#4a7dff',
+                };
+                const dotColor = severityColors[alert.severity] || '#6b7084';
+
+                // ---- Relative timestamp calculation ----
+                // Shows "Xm ago", "Xh ago", "Xd ago" based on elapsed time
+                let relativeTime = '';
+                if (alert.timestamp) {
+                  const elapsed = Date.now() - new Date(alert.timestamp).getTime();
+                  const mins  = Math.floor(elapsed / 60000);
+                  const hours = Math.floor(elapsed / 3600000);
+                  const days  = Math.floor(elapsed / 86400000);
+
+                  if (days > 0)       relativeTime = `${days}d ago`;
+                  else if (hours > 0) relativeTime = `${hours}h ago`;
+                  else if (mins > 0)  relativeTime = `${mins}m ago`;
+                  else                relativeTime = 'Just now';
+                }
+
+                return (
+                  <div
+                    key={alert.id || idx}
+                    className="flex items-center gap-3 px-3 py-2.5 bg-[#252836] border border-[#2d3148] rounded-md"
+                  >
+                    {/* Severity dot — colored circle indicating urgency */}
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: dotColor }}
+                      title={`Severity: ${alert.severity || 'unknown'}`}
+                    />
+
+                    {/* Alert title — truncated if too long */}
+                    <p className="text-[#e8e9ed] text-xs font-medium flex-1 min-w-0 truncate">
+                      {alert.title || 'Untitled alert'}
+                    </p>
+
+                    {/* Category badge — small pill-shaped label */}
+                    {alert.category && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#4a7dff]/15 text-[#4a7dff] shrink-0 whitespace-nowrap">
+                        {alert.category}
+                      </span>
+                    )}
+
+                    {/* Relative timestamp — muted, right-aligned */}
+                    {relativeTime && (
+                      <span
+                        className="text-[10px] text-[#6b7084] shrink-0 whitespace-nowrap"
+                        title={new Date(alert.timestamp).toLocaleString()}
+                      >
+                        {relativeTime}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* ---- "View All" link — navigates to the monitoring tab ---- */}
+              {company.alerts.length > 5 && (
+                <div className="text-center pt-1">
+                  <button
+                    className="text-[#4a7dff] text-[11px] font-medium hover:text-[#6b9aff] transition-colors cursor-pointer"
+                    title="View all alerts in the monitoring tab"
+                  >
+                    View All ({company.alerts.length} alerts) →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============ SECTION 5: OVERALL VERDICT ============ */}
       {/* Read-only display of the overall verdict/notes if set */}
       {company?.verdictNotes && (
         <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-4">
