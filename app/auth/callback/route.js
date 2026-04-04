@@ -51,6 +51,26 @@ export async function GET(request) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
 
       if (!error) {
+        // ============ TRIGGER WELCOME EMAIL SEQUENCE ============
+        // Fire-and-forget: schedule the 5-email onboarding drip.
+        // We don't await this — it shouldn't block the auth redirect.
+        // If it fails, the user still gets in; they just miss the emails.
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email) {
+            fetch(`${origin}/api/email/schedule`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: user.email,
+                userName: user.user_metadata?.full_name || user.user_metadata?.name || '',
+              }),
+            }).catch(() => {}); // Silently ignore email scheduling failures
+          }
+        } catch {
+          // Non-critical — don't block auth flow
+        }
+
         // Success — send user to the dashboard (or wherever `next` points)
         return NextResponse.redirect(`${origin}${next}`)
       }

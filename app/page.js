@@ -1148,12 +1148,23 @@ export default function HomePage() {
           user={user}
           onSignOut={signOut}
           onOpenSearch={() => setShowSearch(true)}
+          notifications={notifications}
+          onMarkNotificationRead={markNotificationRead}
+          onMarkAllNotificationsRead={markAllNotificationsRead}
+          onClearAllNotifications={clearAllNotifications}
+          onNotificationNavigate={handleNotificationNavigate}
         >
           <ErrorBoundary>
             {renderContent()}
           </ErrorBoundary>
         </AppShell>
       </ErrorBoundary>
+
+      {/* ============================================================ */}
+      {/* TOAST NOTIFICATIONS — real-time popup alerts (top-right)      */}
+      {/* Rendered via portal to document.body for z-index safety.     */}
+      {/* ============================================================ */}
+      <ToastNotification toasts={toasts} onDismiss={dismissToast} />
 
       {/* ============================================================ */}
       {/* NEW COMPANY MODAL                                            */}
