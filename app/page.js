@@ -387,7 +387,7 @@ export default function HomePage() {
   // NOW we create the company with verified data pre-populated.
   // ============================================================
   const handleVerifiedCompany = useCallback(
-    async (candidate) => {
+    async (candidate, deckFile) => {
       setShowVerifyModal(false);
 
       // Create the company with the verified name
@@ -409,6 +409,33 @@ export default function HomePage() {
 
       setActiveCompanyId(newCompany.id);
       setActiveTab('dashboard');
+
+      // ============ DECK ANALYSIS (if file attached) ============
+      // Fire-and-forget: upload and analyze the deck in the background.
+      // Results get stored in company.deckAnalysis by the deck API.
+      // This runs alongside the auto-fill research, not blocking it.
+      if (deckFile) {
+        try {
+          const formData = new FormData();
+          formData.append('file', deckFile);
+          formData.append('companyId', newCompany.id);
+          formData.append('companyName', candidate.name);
+          fetch('/api/deck/upload', {
+            method: 'POST',
+            body: formData,
+          }).then(async (res) => {
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && data.analysis) {
+                // Store deck analysis on the company
+                updateCompany(newCompany.id, 'deckAnalysis', data.analysis);
+              }
+            }
+          }).catch(() => {}); // Non-critical — don't block company creation
+        } catch {
+          // Silently fail — deck analysis is optional
+        }
+      }
 
       // --- Log activity: company created ---
       logActivity('company-created', {

@@ -46,6 +46,15 @@ export default function CompanyVerificationModal({
   const [error, setError] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(null);
 
+  // ============ DECK UPLOAD STATE ============
+  // Optional pitch deck file — if provided, it gets passed back with
+  // the confirmed company so the parent can cross-reference deck claims
+  // with AI web research during auto-fill. This is the natural moment
+  // for a VC to attach a deck: they just received it and are now
+  // looking up the company.
+  const [deckFile, setDeckFile] = useState(null);
+  const deckInputRef = React.useRef(null);
+
   // ============ FETCH CANDIDATES ON MOUNT ============
   useEffect(() => {
     let cancelled = false;
@@ -101,9 +110,12 @@ export default function CompanyVerificationModal({
   // ============ HANDLERS ============
   const handleConfirm = useCallback(() => {
     if (selectedIndex !== null && candidates[selectedIndex]) {
-      onConfirm(candidates[selectedIndex]);
+      // Pass the confirmed candidate + optional deck file back to parent.
+      // Parent (page.js) will create the company and optionally trigger
+      // deck analysis alongside web research.
+      onConfirm(candidates[selectedIndex], deckFile);
     }
-  }, [selectedIndex, candidates, onConfirm]);
+  }, [selectedIndex, candidates, onConfirm, deckFile]);
 
   // ============ RENDER ============
   return (
@@ -273,6 +285,73 @@ export default function CompanyVerificationModal({
           )}
         </div>
 
+        {/* ============ DECK UPLOAD (OPTIONAL) ============ */}
+        {/* Shown after candidates load. VCs usually have the deck in hand
+            when they look up a company — this is the natural moment to attach it.
+            The deck gets passed back with onConfirm so page.js can cross-check
+            deck claims against web research during auto-fill. */}
+        {!isLoading && candidates.length > 0 && (
+          <div className="px-6 py-3 border-t border-[#2d3148]/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">📎</span>
+                <div>
+                  <p className="text-[#9ca0b0] text-xs font-medium">
+                    Have a pitch deck?
+                  </p>
+                  <p className="text-[#6b7084] text-[10px]">
+                    Upload it to cross-check claims against web data
+                  </p>
+                </div>
+              </div>
+
+              {deckFile ? (
+                // ============ FILE ATTACHED — show name + remove button ============
+                <div className="flex items-center gap-2">
+                  <span className="text-[#34d399] text-xs font-medium truncate max-w-[160px]">
+                    {deckFile.name}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setDeckFile(null);
+                      if (deckInputRef.current) deckInputRef.current.value = '';
+                    }}
+                    className="text-[#6b7084] hover:text-[#ef4444] text-xs cursor-pointer"
+                    title="Remove deck"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                // ============ NO FILE — show upload button ============
+                <button
+                  onClick={() => deckInputRef.current?.click()}
+                  className={
+                    'px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ' +
+                    'bg-[#4a7dff]/10 text-[#4a7dff] border border-[#4a7dff]/30 ' +
+                    'hover:bg-[#4a7dff]/20 transition-all'
+                  }
+                >
+                  Upload Deck
+                </button>
+              )}
+
+              {/* Hidden file input — accepts PDF and PPTX */}
+              <input
+                ref={deckInputRef}
+                type="file"
+                accept=".pdf,.pptx,.ppt"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setDeckFile(file);
+                }}
+                className="hidden"
+                aria-label="Upload pitch deck"
+              />
+            </div>
+          </div>
+        )}
+
         {/* ============ FOOTER ============ */}
         {!isLoading && (
           <div className="px-6 py-4 border-t border-[#2d3148] flex items-center justify-between">
@@ -295,7 +374,7 @@ export default function CompanyVerificationModal({
                   : 'bg-[#34d399]/30 text-white/50 cursor-not-allowed')
               }
             >
-              ✓ Confirm & Research
+              {deckFile ? '✓ Confirm & Research + Analyze Deck' : '✓ Confirm & Research'}
             </button>
           </div>
         )}
