@@ -4,7 +4,8 @@
 // app/landing/page.js — DueDrill Marketing Landing Page
 // ============================================================================
 // Public-facing marketing page for the DueDrill platform.
-// Designed to convert visitors into users/customers.
+// Designed to convert angel investors, VC fund managers, and family offices.
+// Brand: Grand Kru Ventures | Dark theme (#0f1117, #1e2130, #4a7dff, #34d399)
 // ============================================================================
 
 import { useState, useCallback, useEffect } from 'react';
@@ -13,108 +14,78 @@ import { useState, useCallback, useEffect } from 'react';
 const FEATURES = [
   {
     icon: '🔍',
-    title: 'AI-Powered Research',
-    desc: 'One-click deep research on any company using Perplexity, Claude, GPT-4, or Groq. Get instant analysis of team, market, product, financials, and more.',
-  },
-  {
-    icon: '📊',
-    title: '16 DD Categories',
-    desc: 'Comprehensive framework covering Team, Product, Market, Business Model, Traction, Financial, Competitive, IP, Customers, Investors, Regulatory, Legal, Israel-specific, Risks, and Deal Terms.',
+    title: 'AI Auto-Fill',
+    desc: 'Enter a company name and let AI research and populate 214 data fields across 16 due diligence sections automatically. Choose from Perplexity, Claude, GPT-4, or Groq for each query.',
   },
   {
     icon: '⚖️',
     title: 'Weighted Scoring',
-    desc: 'Proprietary scoring engine with customizable weights. Team at 18%, Product at 14%, Market at 13% — because great teams matter most in early-stage VC.',
+    desc: '12 scored categories with fully customizable weights. Team at 18%, Product at 14%, Market at 13% — calibrate the model to match your fund thesis and stage focus.',
   },
   {
     icon: '📄',
-    title: 'Investment Memo Reports',
-    desc: 'Generate Goldman Sachs-quality investment memos with one click. Print-ready, professional formatting with score matrices and section-by-section analysis.',
+    title: 'Investment Memos',
+    desc: 'Generate Goldman-style PDF investment memos with one click. Section-by-section analysis, score matrices, risk flags, and deal terms — ready for your IC or LP meeting.',
+  },
+  {
+    icon: '📊',
+    title: 'Deck Cross-Check',
+    desc: 'Upload a pitch deck and verify founder claims against live web data. Revenue figures, team backgrounds, market sizing, competitive landscape — every claim fact-checked by AI.',
   },
   {
     icon: '🏢',
-    title: 'Multi-Company Portfolio',
-    desc: 'Track unlimited companies through your pipeline. Switch between deals instantly with persistent data, completion tracking, and side-by-side comparison.',
+    title: 'Pipeline Management',
+    desc: 'Kanban board with customizable deal stages. Track unlimited companies through your pipeline with persistent data, completion tracking, and side-by-side comparison views.',
   },
   {
-    icon: '🇮🇱',
-    title: 'Israel-Specific DD',
-    desc: 'Built-in support for Israeli startup diligence: dual-entity structures, IIA grants, Section 102 options, transfer pricing, US market entry strategy.',
-  },
-];
-
-// ============ PRICING DATA ============
-const PRICING = [
-  {
-    name: 'Solo Investor',
-    price: '$49',
-    period: '/month',
-    desc: 'For individual angel investors and scouts',
-    features: [
-      'Up to 10 active companies',
-      '4 AI providers (Perplexity, Claude, GPT-4, Groq)',
-      'Full 16-section DD framework',
-      'Investment memo generation',
-      'JSON data export/import',
-      'Email support',
-    ],
-    cta: 'Start Free Trial',
-    highlighted: false,
-  },
-  {
-    name: 'Fund',
-    price: '$199',
-    period: '/month',
-    desc: 'For VC funds and family offices',
-    features: [
-      'Unlimited companies',
-      'All AI providers + priority API',
-      'Team collaboration (5 seats)',
-      'Custom scoring weights',
-      'Supabase cloud sync',
-      'White-label reports',
-      'Priority support',
-      'API access',
-    ],
-    cta: 'Start Free Trial',
-    highlighted: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    desc: 'For large funds and institutions',
-    features: [
-      'Everything in Fund',
-      'Unlimited seats',
-      'SSO / SAML authentication',
-      'Custom DD frameworks',
-      'CRM integrations (Salesforce, HubSpot)',
-      'Dedicated account manager',
-      'SLA guarantee',
-      'On-premise deployment option',
-    ],
-    cta: 'Contact Sales',
-    highlighted: false,
+    icon: '👥',
+    title: 'Team Collaboration',
+    desc: 'Share deal rooms with partners and associates. Assign sections, leave comments, track who reviewed what. Cloud sync keeps everyone on the same page in real time.',
   },
 ];
 
 // ============ TESTIMONIAL DATA ============
+// Placeholder quotes from realistic VC personas — replace with real testimonials
 const TESTIMONIALS = [
   {
-    quote: 'DueDrill cut our DD process from 3 weeks to 3 days. The AI research feature alone is worth 10x the price.',
-    name: 'Managing Partner',
-    role: 'Series A Fund, NYC',
+    quote: 'We used to spend 3 weeks per deal on diligence. DueDrill gets us to an IC-ready memo in 2 days. The AI auto-fill alone saved our associate team 400+ hours last quarter.',
+    name: 'Sarah Chen',
+    role: 'Managing Partner, Series A Fund — NYC',
+    note: '[Placeholder — replace with real testimonial]',
   },
   {
-    quote: 'Finally, a tool built by someone who actually understands VC due diligence. The Israel section is a game-changer for cross-border deals.',
-    name: 'Principal',
-    role: 'Growth Equity Fund, Tel Aviv',
+    quote: 'The weighted scoring engine gives our investment committee exactly what they need — a consistent, data-driven framework that removes bias and forces rigor on every deal.',
+    name: 'David Aronson',
+    role: 'General Partner, Seed Fund — San Francisco',
+    note: '[Placeholder — replace with real testimonial]',
   },
   {
-    quote: 'The scoring engine gives our IC exactly what they need — a data-driven framework that removes bias from investment decisions.',
-    name: 'Partner',
-    role: 'Seed Fund, San Francisco',
+    quote: 'As a family office evaluating 50+ deals a year, we needed a system that scales. DueDrill turned our DD process from an art into a repeatable science. The PDF memos are LP-ready.',
+    name: 'Michael Torres',
+    role: 'CIO, Multi-Family Office — Miami',
+    note: '[Placeholder — replace with real testimonial]',
+  },
+];
+
+// ============ HOW IT WORKS DATA ============
+const HOW_IT_WORKS = [
+  {
+    step: '01',
+    title: 'Enter a Company Name',
+    desc: 'Type any startup name and DueDrill\'s AI verifies the company identity, pulls basic firmographics, and creates a full DD workspace with 16 sections and 214 data fields ready to populate.',
+    color: '#4a7dff',
+  },
+  {
+    step: '02',
+    title: 'AI Researches Everything',
+    desc: 'Hit "Auto-Research" and watch AI fill in team backgrounds, product analysis, market sizing, traction metrics, financials, competitive landscape, IP, regulatory, and more — across all 16 categories simultaneously.',
+    color: '#a78bfa',
+  },
+  {
+    step: '03',
+    title: 'Score, Export, Decide',
+    desc: 'Review the AI findings, adjust scores across 12 weighted dimensions, generate a print-ready investment memo PDF, and make your investment decision with full conviction.',
+    color: '#34d399',
   },
 ];
 
@@ -186,7 +157,8 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">Features</a>
-            <a href="#pricing" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">Pricing</a>
+            <a href="#how-it-works" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">How It Works</a>
+            <a href="/pricing" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">Pricing</a>
             <a
               href="/"
               className="px-4 py-2 bg-[#4a7dff] text-white text-sm font-semibold rounded-lg hover:bg-[#3d6be6] transition-colors"
@@ -203,23 +175,24 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#4a7dff]/10 border border-[#4a7dff]/30 mb-8">
             <span className="w-2 h-2 rounded-full bg-[#34d399] animate-pulse" />
-            <span className="text-[#9ca0b0] text-xs font-medium">AI-Powered Due Diligence for Smarter Investments</span>
+            <span className="text-[#9ca0b0] text-xs font-medium">AI-Powered Due Diligence for VCs, Angels &amp; Family Offices</span>
           </div>
 
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-            <span className="text-[#e8e9ed]">Startup Due Diligence,</span>
+            <span className="text-[#e8e9ed]">Research Any Startup</span>
             <br />
             <span className="bg-gradient-to-r from-[#4a7dff] to-[#a78bfa] bg-clip-text text-transparent">
-              Supercharged by AI
+              in 60 Seconds
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-[#9ca0b0] max-w-2xl mx-auto mb-10 leading-relaxed">
-            The only due diligence platform built for VC investors who want comprehensive,
-            data-driven analysis in hours — not weeks.
-            16 DD categories. 4 AI providers. One powerful dashboard.
+            16 due diligence categories. 214 data fields. 4 AI providers.
+            DueDrill auto-fills your entire DD workbook, scores every deal with weighted
+            precision, and exports IC-ready investment memos — so you can move from
+            deal source to investment decision in hours, not weeks.
           </p>
 
           {/* CTA Buttons */}
@@ -231,10 +204,10 @@ export default function LandingPage() {
               Start Free — No Card Required
             </a>
             <a
-              href="#features"
+              href="#demo"
               className="px-8 py-3.5 bg-transparent text-[#9ca0b0] font-semibold rounded-xl text-base border border-[#2d3148] hover:border-[#4a7dff] hover:text-[#e8e9ed] transition-all"
             >
-              See How It Works
+              Watch Demo
             </a>
           </div>
 
@@ -242,9 +215,9 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
             {[
               { num: '16', label: 'DD Categories' },
+              { num: '214', label: 'Data Fields' },
               { num: '4', label: 'AI Providers' },
-              { num: '214', label: 'Data Points' },
-              { num: '12', label: 'Scored Dimensions' },
+              { num: '60s', label: 'Research Time' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <div className="text-2xl md:text-3xl font-extrabold text-[#4a7dff]">{stat.num}</div>
@@ -265,7 +238,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-[#9ca0b0] text-base max-w-xl mx-auto">
               Built by investors, for investors. Every feature designed to make your
-              diligence process faster, deeper, and more consistent.
+              diligence process faster, deeper, and more consistent across every deal.
             </p>
           </div>
 
@@ -285,36 +258,20 @@ export default function LandingPage() {
       </section>
 
       {/* ============ HOW IT WORKS ============ */}
-      <section className="py-20 px-6">
+      <section id="how-it-works" className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
               From Deal Source to Investment Memo in{' '}
               <span className="text-[#34d399]">3 Steps</span>
             </h2>
+            <p className="text-[#9ca0b0] text-base max-w-xl mx-auto">
+              No onboarding calls. No data entry. Just enter a company name and let AI do the heavy lifting.
+            </p>
           </div>
 
           <div className="space-y-8">
-            {[
-              {
-                step: '01',
-                title: 'Add a Company',
-                desc: 'Enter the company name and basic details. The platform creates a comprehensive DD workspace with 16 pre-structured sections and 214 data points ready to fill.',
-                color: '#4a7dff',
-              },
-              {
-                step: '02',
-                title: 'Run AI Research',
-                desc: 'Click "Auto-Research" on any section. Choose from Perplexity (real-time web search), Claude (deep analysis), GPT-4, or Groq (speed). Get instant, structured findings.',
-                color: '#a78bfa',
-              },
-              {
-                step: '03',
-                title: 'Score, Decide, Report',
-                desc: 'Rate each category 0-10, review the weighted overall score, and generate a print-ready investment memo. Share with your IC or LP with confidence.',
-                color: '#34d399',
-              },
-            ].map((item, i) => (
+            {HOW_IT_WORKS.map((item, i) => (
               <div
                 key={i}
                 className="flex gap-6 items-start bg-[#1e2130] border border-[#2d3148] rounded-xl p-6"
@@ -335,13 +292,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ============ TESTIMONIALS ============ */}
+      {/* ============ SOCIAL PROOF / TESTIMONIALS ============ */}
       <section className="py-20 px-6 bg-[#1a1d27]/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
               Trusted by <span className="text-[#4a7dff]">Smart Money</span>
             </h2>
+            <p className="text-[#9ca0b0] text-sm">
+              What investors are saying about DueDrill
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -356,6 +316,7 @@ export default function LandingPage() {
                 <div className="border-t border-[#2d3148] pt-3">
                   <p className="text-[#e8e9ed] text-sm font-semibold">{t.name}</p>
                   <p className="text-[#6b7084] text-xs">{t.role}</p>
+                  {t.note && <p className="text-[#4a7dff]/40 text-[10px] mt-1">{t.note}</p>}
                 </div>
               </div>
             ))}
@@ -363,65 +324,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ============ PRICING SECTION ============ */}
+      {/* ============ PRICING CTA SECTION ============ */}
+      {/* Links to dedicated /pricing page to avoid content duplication */}
       <section id="pricing" className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-              Simple, Transparent <span className="text-[#4a7dff]">Pricing</span>
-            </h2>
-            <p className="text-[#9ca0b0] text-base max-w-xl mx-auto">
-              Start free. Upgrade when you need more. Cancel anytime.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PRICING.map((plan, i) => (
-              <div
-                key={i}
-                className={
-                  'rounded-xl p-6 flex flex-col ' +
-                  (plan.highlighted
-                    ? 'bg-[#1e2130] border-2 border-[#4a7dff] shadow-lg shadow-[#4a7dff]/10 relative'
-                    : 'bg-[#1e2130] border border-[#2d3148]')
-                }
-              >
-                {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#4a7dff] text-white text-xs font-bold rounded-full">
-                    Most Popular
-                  </div>
-                )}
-
-                <h3 className="text-[#e8e9ed] font-bold text-lg mb-1">{plan.name}</h3>
-                <p className="text-[#6b7084] text-xs mb-4">{plan.desc}</p>
-
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-3xl font-extrabold text-[#e8e9ed]">{plan.price}</span>
-                  {plan.period && <span className="text-[#6b7084] text-sm">{plan.period}</span>}
-                </div>
-
-                <ul className="space-y-2.5 mb-8 flex-1">
-                  {plan.features.map((feat, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm text-[#9ca0b0]">
-                      <span className="text-[#34d399] mt-0.5 shrink-0">&#10003;</span>
-                      {feat}
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className={
-                    'w-full py-3 rounded-lg font-semibold text-sm transition-all ' +
-                    (plan.highlighted
-                      ? 'bg-[#4a7dff] text-white hover:bg-[#3d6be6]'
-                      : 'bg-[#252836] text-[#e8e9ed] border border-[#2d3148] hover:border-[#4a7dff]')
-                  }
-                >
-                  {plan.cta}
-                </button>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
+            Simple, Transparent <span className="text-[#4a7dff]">Pricing</span>
+          </h2>
+          <p className="text-[#9ca0b0] text-base max-w-xl mx-auto mb-8">
+            Plans for solo angels, VC funds, and enterprise. Start free, upgrade when you need more, cancel anytime.
+          </p>
+          <a
+            href="/pricing"
+            className="inline-block px-8 py-3.5 bg-[#4a7dff] text-white font-bold rounded-xl text-base hover:bg-[#3d6be6] transition-all shadow-lg shadow-[#4a7dff]/25 hover:shadow-[#4a7dff]/40"
+          >
+            View Pricing Plans
+          </a>
         </div>
       </section>
 
@@ -482,11 +400,11 @@ export default function LandingPage() {
             &copy; {new Date().getFullYear()} DueDrill by Grand Kru Ventures. All rights reserved.
           </p>
           <div className="flex items-center gap-4 flex-wrap justify-center">
-            <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
-            <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
             <a href="/trust" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Security</a>
             <a href="/faq" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">FAQ</a>
             <a href="/changelog" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Changelog</a>
+            <a href="/privacy" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Privacy</a>
+            <a href="/terms" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Terms</a>
             <a href="mailto:yuri@grandkruventures.com" className="text-[#6b7084] text-xs hover:text-[#e8e9ed] transition-colors">Contact</a>
           </div>
         </div>
