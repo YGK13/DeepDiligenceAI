@@ -16,7 +16,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // TractionSection Component
 // ============================================================
-export default function TractionSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function TractionSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the traction section
   const u = (field, val) => onChange('traction', { ...data, [field]: val });
 
@@ -32,7 +32,7 @@ export default function TractionSection({ data, onChange, company, settings, onA
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Traction & Metrics" subtitle="Revenue, growth rates, user engagement, retention, and pipeline" sectionId="traction">
+      <Card title="Traction & Metrics" subtitle="Revenue, growth rates, user engagement, retention, and pipeline" sectionId="traction" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — all quantitative traction metrics
             These are the numbers investors care about most

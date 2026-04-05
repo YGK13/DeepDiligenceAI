@@ -64,7 +64,7 @@ const SCALABILITY_OPTIONS = [
 // ============================================================
 // ProductSection Component
 // ============================================================
-export default function ProductSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function ProductSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the product section
   const u = (field, val) => onChange('product', { ...data, [field]: val });
 
@@ -80,7 +80,7 @@ export default function ProductSection({ data, onChange, company, settings, onAi
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Product & Technology" subtitle="Product maturity, tech stack, defensibility, and roadmap" sectionId="product">
+      <Card title="Product & Technology" subtitle="Product maturity, tech stack, defensibility, and roadmap" sectionId="product" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — product classification fields
             -------------------------------------------------------- */}

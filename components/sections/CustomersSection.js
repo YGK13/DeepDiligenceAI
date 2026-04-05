@@ -49,7 +49,7 @@ const PIPELINE_QUALITY_OPTIONS = [
 // ============================================================
 // CustomersSection Component
 // ============================================================
-export default function CustomersSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function CustomersSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the customers section
   const u = (field, val) => onChange('customers', { ...data, [field]: val });
 
@@ -65,7 +65,7 @@ export default function CustomersSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Customers & Partnerships" subtitle="Customer base quality, key logos, case studies, and partnerships" sectionId="customers">
+      <Card title="Customers & Partnerships" subtitle="Customer base quality, key logos, case studies, and partnerships" sectionId="customers" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — customer classification
             -------------------------------------------------------- */}

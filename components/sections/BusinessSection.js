@@ -33,7 +33,7 @@ const REVENUE_MODEL_OPTIONS = [
 // ============================================================
 // BusinessSection Component
 // ============================================================
-export default function BusinessSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function BusinessSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the business section
   const u = (field, val) => onChange('business', { ...data, [field]: val });
 
@@ -49,7 +49,7 @@ export default function BusinessSection({ data, onChange, company, settings, onA
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Business Model" subtitle="Revenue model, pricing, unit economics, and growth strategy" sectionId="business">
+      <Card title="Business Model" subtitle="Revenue model, pricing, unit economics, and growth strategy" sectionId="business" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — business model and unit economics
             -------------------------------------------------------- */}

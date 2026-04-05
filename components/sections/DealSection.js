@@ -50,7 +50,7 @@ const BOARD_SEAT_OPTIONS = [
 // ============================================================
 // DealSection Component
 // ============================================================
-export default function DealSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function DealSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the deal section
   const u = (field, val) => onChange('deal', { ...data, [field]: val });
 
@@ -66,7 +66,7 @@ export default function DealSection({ data, onChange, company, settings, onAiRes
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Deal Terms" subtitle="Investment structure, valuation, allocation, and key legal terms" sectionId="deal">
+      <Card title="Deal Terms" subtitle="Investment structure, valuation, allocation, and key legal terms" sectionId="deal" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — core deal parameters
             -------------------------------------------------------- */}

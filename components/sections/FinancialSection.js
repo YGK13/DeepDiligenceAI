@@ -17,7 +17,7 @@ import Card from '@/components/ui/Card';
 // ============================================================
 // FinancialSection Component
 // ============================================================
-export default function FinancialSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function FinancialSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the financial section
   const u = (field, val) => onChange('financial', { ...data, [field]: val });
 
@@ -33,7 +33,7 @@ export default function FinancialSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Financials" subtitle="Fundraising history, burn rate, runway, and financial projections" sectionId="financial">
+      <Card title="Financials" subtitle="Fundraising history, burn rate, runway, and financial projections" sectionId="financial" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — key financial metrics
             -------------------------------------------------------- */}

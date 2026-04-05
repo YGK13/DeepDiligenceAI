@@ -50,7 +50,7 @@ const PRORATA_OPTIONS = [
 // ============================================================
 // InvestorsSection Component
 // ============================================================
-export default function InvestorsSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function InvestorsSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the investors section
   const u = (field, val) => onChange('investors', { ...data, [field]: val });
 
@@ -66,7 +66,7 @@ export default function InvestorsSection({ data, onChange, company, settings, on
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Investors & Syndicate" subtitle="Lead investor, syndicate quality, board composition, and strategic value" sectionId="investors">
+      <Card title="Investors & Syndicate" subtitle="Lead investor, syndicate quality, board composition, and strategic value" sectionId="investors" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — investor classification
             -------------------------------------------------------- */}

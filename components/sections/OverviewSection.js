@@ -71,7 +71,7 @@ const DEAL_SOURCE_OPTIONS = [
 //   settings   — app settings (API keys, preferences) passed to AI panel
 //   onAiResult — callback when AI research returns data for this section
 // ============================================================
-export default function OverviewSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function OverviewSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field within the overview section data
   // Merges the new field value into the existing data object
   const u = (field, val) => onChange('overview', { ...data, [field]: val });
@@ -94,7 +94,7 @@ export default function OverviewSection({ data, onChange, company, settings, onA
       {/* --------------------------------------------------------
           Main form card — all overview fields
           -------------------------------------------------------- */}
-      <Card title="Company Overview" subtitle="Basic company information, stage, sector, and deal source" sectionId="overview">
+      <Card title="Company Overview" subtitle="Basic company information, stage, sector, and deal source" sectionId="overview" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — short text fields arranged in responsive grid
             1 col on mobile, 2 on tablet, 3 on desktop

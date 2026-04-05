@@ -633,6 +633,15 @@ export default function HomePage() {
         });
       }
 
+      // ---- Update lastResearched timestamp for this section ----
+      // Tracks when each section was last auto-filled so FreshnessIndicator
+      // can show how stale the data is (green/yellow/red dot in Card headers).
+      const existingTimestamps = company?.lastResearched || {};
+      updateCompany(activeCompanyId, 'lastResearched', {
+        ...existingTimestamps,
+        [sectionId]: new Date().toISOString(),
+      });
+
       // --- Log activity: AI auto-fill completed for a section ---
       const compName = company?.overview?.companyName || company?.overview?.name || 'Unknown';
       logActivity('ai-autofill', {
@@ -735,6 +744,14 @@ export default function HomePage() {
 
             handleSectionChange(sectionKey, merged);
 
+            // ---- Update lastResearched timestamp for this section ----
+            // So FreshnessIndicator shows "Fresh" green dot after research
+            const prevTimestamps = company?.lastResearched || {};
+            updateCompany(activeCompanyId, 'lastResearched', {
+              ...prevTimestamps,
+              [sectionKey]: new Date().toISOString(),
+            });
+
             // Collect confidence data
             if (result.confidence) {
               allConfidence[sectionKey] = result.confidence;
@@ -817,6 +834,126 @@ export default function HomePage() {
       return { success: errors === 0, totalFilled, errors };
     },
     [activeCompanyId, company, settings, handleSectionChange, updateCompany, logActivity, addNotification]
+  );
+
+  // ============================================================
+  // RETRY FAILED SECTIONS HANDLER
+  // ============================================================
+  // Called by DashboardView's RetryPanel to re-research only the
+  // sections that failed during the initial "Research This Company"
+  // pass. Takes an array of section keys and an onProgress callback.
+  // Returns { success, totalFilled, errors } just like handleResearchAll.
+  // ============================================================
+  const handleRetrySections = useCallback(
+    async (sectionKeys, onProgress) => {
+      if (!activeCompanyId || !company || !sectionKeys?.length) return;
+
+      const companyName = company.overview?.companyName || company.overview?.name || company.name || '';
+      const companyUrl = company.overview?.websiteUrl || company.overview?.url || '';
+
+      let totalFilled = 0;
+      let errors = 0;
+
+      for (let i = 0; i < sectionKeys.length; i++) {
+        const sectionKey = sectionKeys[i];
+
+        // Report progress: this section is starting
+        if (onProgress) {
+          onProgress({
+            section: sectionKey,
+            sectionIndex: i,
+            totalSections: sectionKeys.length,
+            status: 'researching',
+          });
+        }
+
+        try {
+          const response = await fetch('/api/ai/autofill', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              companyName,
+              companyUrl,
+              section: sectionKey,
+              provider: settings?.provider,
+              model: settings?.models?.[settings?.provider] || '',
+              apiKeys: settings?.apiKeys || {},
+            }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success && result.data) {
+            const currentData = company[sectionKey] || {};
+            const merged = { ...currentData };
+            let sectionFilled = 0;
+
+            const suggestedScore = result.data.suggestedScore;
+
+            for (const [key, value] of Object.entries(result.data)) {
+              if (key === 'suggestedScore') continue;
+              if (value !== '' && value !== null && value !== undefined) {
+                merged[key] = value;
+                sectionFilled++;
+                totalFilled++;
+              }
+            }
+
+            const scoreField = SECTION_SCORE_FIELDS[sectionKey];
+            if (scoreField && suggestedScore != null && Number.isInteger(suggestedScore) && suggestedScore >= 1 && suggestedScore <= 10) {
+              merged[scoreField] = suggestedScore;
+              sectionFilled++;
+              totalFilled++;
+            }
+
+            handleSectionChange(sectionKey, merged);
+
+            // ---- Update lastResearched timestamp ----
+            const prevTimestamps = company?.lastResearched || {};
+            updateCompany(activeCompanyId, 'lastResearched', {
+              ...prevTimestamps,
+              [sectionKey]: new Date().toISOString(),
+            });
+
+            // Report progress: section complete
+            if (onProgress) {
+              onProgress({
+                section: sectionKey,
+                sectionIndex: i,
+                totalSections: sectionKeys.length,
+                filled: sectionFilled,
+                status: 'done',
+              });
+            }
+          } else {
+            errors++;
+            if (onProgress) {
+              onProgress({
+                section: sectionKey,
+                sectionIndex: i,
+                totalSections: sectionKeys.length,
+                status: 'error',
+                error: result.error || 'Failed',
+              });
+            }
+          }
+        } catch (err) {
+          errors++;
+          if (onProgress) {
+            onProgress({
+              section: sectionKey,
+              sectionIndex: i,
+              totalSections: sectionKeys.length,
+              status: 'error',
+              error: err.message,
+            });
+          }
+        }
+      }
+
+      return { success: errors === 0, totalFilled, errors };
+    },
+    [activeCompanyId, company, settings, handleSectionChange, updateCompany]
   );
 
   // ============================================================
@@ -930,7 +1067,7 @@ export default function HomePage() {
 
     // Special views (not section editors)
     if (activeTab === 'dashboard') {
-      return <DashboardView company={company} onResearchAll={handleResearchAll} />;
+      return <DashboardView company={company} onResearchAll={handleResearchAll} onRetrySections={handleRetrySections} />;
     }
     if (activeTab === 'report') {
       return <ReportView company={company} />;
@@ -1134,6 +1271,7 @@ export default function HomePage() {
           onAiResult={handleAiResult}
           onAutoFill={handleAutoFill}
           confidenceData={company?.confidenceData?.[activeTab] || {}}
+          lastResearched={company?.lastResearched?.[activeTab]}
         />
       );
     }

@@ -57,7 +57,7 @@ const SECTION_102_OPTIONS = [
 // ============================================================
 // IsraelSection Component
 // ============================================================
-export default function IsraelSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {} }) {
+export default function IsraelSection({ data, onChange, company, settings, onAiResult, onAutoFill, confidenceData = {}, lastResearched }) {
   // Helper to update a single field in the Israel section
   const u = (field, val) => onChange('israel', { ...data, [field]: val });
 
@@ -73,7 +73,7 @@ export default function IsraelSection({ data, onChange, company, settings, onAiR
         onAutoFill={onAutoFill}
       />
 
-      <Card title="Israel Nexus" subtitle="Dual-entity structure, IIA grants, Section 102, transfer pricing, and US strategy" sectionId="israel">
+      <Card title="Israel Nexus" subtitle="Dual-entity structure, IIA grants, Section 102, transfer pricing, and US strategy" sectionId="israel" lastResearched={lastResearched}>
         {/* --------------------------------------------------------
             Grid layout — entity structure and Israeli programs
             -------------------------------------------------------- */}

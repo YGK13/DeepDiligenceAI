@@ -60,6 +60,7 @@ import {
   calculateCompletionStats,
 } from '@/lib/scoring';
 import { SCORE_WEIGHTS, NAV_ITEMS } from '@/lib/constants';
+import RetryPanel from '@/components/ui/RetryPanel';
 
 // ============ SCORE CATEGORY LABELS ============
 // Human-readable labels for each SCORE_WEIGHTS key.
@@ -93,7 +94,7 @@ function getScoreHex(score) {
 }
 
 // ============ COMPONENT ============
-export default function DashboardView({ company, onResearchAll }) {
+export default function DashboardView({ company, onResearchAll, onRetrySections }) {
   // ============ CSV EXPORT STATE ============
   const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [csvExportMsg, setCsvExportMsg] = useState(''); // success or error message
@@ -147,6 +148,95 @@ export default function DashboardView({ company, onResearchAll }) {
       setIsResearching(false);
     }
   }, [onResearchAll]);
+
+  // ============ RETRY PANEL STATE ============
+  // Tracks failed sections after research completes, plus retry-in-progress state.
+  // failedSections: [{ sectionKey, sectionLabel, error }]
+  const [failedSections, setFailedSections] = useState([]);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryProgress, setRetryProgress] = useState(null);
+
+  // ---- Section key → human-readable label lookup ----
+  // Uses NAV_ITEMS to map e.g. "team" → "Team & Founders"
+  const sectionLabelMap = useMemo(() => {
+    const map = {};
+    for (const item of NAV_ITEMS) {
+      map[item.id] = item.label;
+    }
+    return map;
+  }, []);
+
+  // ---- Build failedSections whenever sectionProgress changes and research is done ----
+  // We populate failedSections only after research completes (isResearching goes false)
+  // and there are errors in sectionProgress.
+  React.useEffect(() => {
+    if (isResearching) return; // Still running, wait
+
+    // Check if we have any progress data at all (means research was run)
+    const progressEntries = Object.entries(sectionProgress);
+    if (progressEntries.length === 0) return;
+
+    // Collect sections that ended in error
+    const failures = progressEntries
+      .filter(([, info]) => info.status === 'error')
+      .map(([key, info]) => ({
+        sectionKey: key,
+        sectionLabel: sectionLabelMap[key] || key.charAt(0).toUpperCase() + key.slice(1),
+        error: info.error || 'Unknown error',
+      }));
+
+    setFailedSections(failures);
+  }, [isResearching, sectionProgress, sectionLabelMap]);
+
+  // ============ RETRY HANDLER ============
+  // Called by RetryPanel when user clicks "Retry Failed Sections".
+  // Calls onRetrySections with the failed keys and a progress callback.
+  const handleRetryFailed = useCallback(async (sectionKeys) => {
+    if (!onRetrySections || !sectionKeys?.length) return;
+
+    setIsRetrying(true);
+    setRetryProgress({ current: 0, total: sectionKeys.length });
+
+    try {
+      const result = await onRetrySections(sectionKeys, (progress) => {
+        // Update the main sectionProgress so the checklist reflects retry status
+        setSectionProgress((prev) => ({
+          ...prev,
+          [progress.section]: {
+            status: progress.status,
+            filled: progress.filled || 0,
+            error: progress.error || '',
+          },
+        }));
+        // Update retry progress counter
+        if (progress.status === 'done' || progress.status === 'error') {
+          setRetryProgress((prev) => ({
+            ...prev,
+            current: (prev?.current || 0) + 1,
+          }));
+        }
+      });
+
+      // If all retries succeeded, auto-dismiss by clearing failedSections
+      if (result?.success) {
+        setFailedSections([]);
+      }
+      // Otherwise the useEffect above will rebuild failedSections from
+      // the updated sectionProgress on next render cycle.
+    } catch (err) {
+      // Retry itself crashed — keep failedSections as-is
+    } finally {
+      setIsRetrying(false);
+      setRetryProgress(null);
+    }
+  }, [onRetrySections]);
+
+  // ============ DISMISS HANDLER ============
+  // User clicks "Dismiss" on RetryPanel — just hide it
+  const handleDismissRetry = useCallback(() => {
+    setFailedSections([]);
+  }, []);
+
   // ============ CALCULATE OVERALL SCORE ============
   // The scoring function reads from company[sectionKey][field] per SCORE_WEIGHTS
   const overallScore = useMemo(
@@ -322,6 +412,18 @@ export default function DashboardView({ company, onResearchAll }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* ============ RETRY PANEL — shown after research with partial failures ============ */}
+      {/* Only visible when failedSections is non-empty and research is done */}
+      {!isResearching && failedSections.length > 0 && onRetrySections && (
+        <RetryPanel
+          failedSections={failedSections}
+          onRetry={handleRetryFailed}
+          onDismiss={handleDismissRetry}
+          isRetrying={isRetrying}
+          retryProgress={retryProgress}
+        />
       )}
 
       {/* ============ SECTION 0B: KEY METRICS ROW ============ */}
