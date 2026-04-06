@@ -12,6 +12,7 @@
 // ============================================================================
 
 import { NextResponse } from 'next/server';
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
 
 // ============ EMAIL VALIDATION ============
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,6 +41,10 @@ const memoryStore = [];
 // ============ POST HANDLER ============
 export async function POST(request) {
   try {
+    // ============ RATE LIMITING ============
+    const rateLimitResult = rateLimitByApiRoute(request);
+    if (rateLimitResult) return rateLimitResult;
+
     const body = await request.json();
     const { email } = body;
 

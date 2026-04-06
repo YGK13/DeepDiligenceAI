@@ -28,6 +28,7 @@
 // ============================================================================
 
 import { NextResponse } from 'next/server';
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
 import { WELCOME_SEQUENCE } from '@/lib/email/templates';
 
 // ============================================================================

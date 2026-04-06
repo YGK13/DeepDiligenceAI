@@ -22,6 +22,7 @@
 import { NextResponse } from 'next/server';
 import { WELCOME_SEQUENCE, personalizeEmail } from '@/lib/email/templates';
 import { sendEmail } from '@/lib/email/send';
+import { rateLimitByApiRoute } from '@/lib/security/rateLimit';
 
 // ============================================================================
 // EMAIL VALIDATION
