@@ -56,6 +56,7 @@ import ActivityLogView from '@/components/views/ActivityLogView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 import ToastNotification from '@/components/ui/ToastNotification';
+import LoadingView from '@/components/ui/LoadingView';
 
 // ============================================================
 // NOTIFICATIONS — in-app notification system
@@ -1284,17 +1285,7 @@ export default function HomePage() {
   // RENDER — Don't render until hydrated (avoids SSR mismatch)
   // ============================================================
   if (!isHydrated) {
-    return (
-      <div
-        className="flex items-center justify-center h-screen"
-        style={{ background: 'var(--bg-primary)' }}
-      >
-        <div className="text-center">
-          <div className="text-4xl mb-4 ai-loading">🔍</div>
-          <p style={{ color: 'var(--text-secondary)' }}>Loading DueDrill...</p>
-        </div>
-      </div>
-    );
+    return <LoadingView />;
   }
 
   return (
