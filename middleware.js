@@ -168,6 +168,19 @@ export async function middleware(request) {
   // after successful authentication.
   // =========================================================================
 
+  // =========================================================================
+  // RULE 2a: Unauthenticated user hitting / → redirect to /landing
+  // =========================================================================
+  // The root route (/) is the app dashboard. Unauthenticated visitors should
+  // see the marketing landing page instead of being bounced to /login.
+  // =========================================================================
+
+  if (!user && pathname === '/') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/landing'
+    return NextResponse.redirect(url)
+  }
+
   if (!user && !isPublicRoute(pathname)) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
