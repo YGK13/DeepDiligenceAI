@@ -22,7 +22,7 @@ const TIERS = [
     annualPrice: 0,
     description: 'Try DueDrill with basic features',
     cta: 'Get Started',
-    ctaLink: '/',
+    ctaLink: '/signup',
     highlighted: false,
     features: [
       '1 company',

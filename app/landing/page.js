@@ -160,7 +160,7 @@ export default function LandingPage() {
             <a href="#how-it-works" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">How It Works</a>
             <a href="/pricing" className="text-[#9ca0b0] text-sm hover:text-[#e8e9ed] transition-colors hidden sm:block">Pricing</a>
             <a
-              href="/"
+              href="/signup"
               className="px-4 py-2 bg-[#4a7dff] text-white text-sm font-semibold rounded-lg hover:bg-[#3d6be6] transition-colors"
             >
               Launch App
@@ -198,7 +198,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <a
-              href="/"
+              href="/signup"
               className="px-8 py-3.5 bg-[#4a7dff] text-white font-bold rounded-xl text-base hover:bg-[#3d6be6] transition-all shadow-lg shadow-[#4a7dff]/25 hover:shadow-[#4a7dff]/40"
             >
               Start Free — No Card Required
