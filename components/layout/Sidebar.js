@@ -24,8 +24,14 @@ import { NAV_ITEMS, SECTION_LABELS } from '@/lib/constants';
 // localStorage key for persisting which groups are expanded/collapsed
 const STORAGE_KEY = 'duedrill_sidebar_state';
 
+// localStorage key for persisting the advanced features toggle
+const ADVANCED_STORAGE_KEY = 'duedrill_show_advanced';
+
 // Section keys that should be expanded on very first load (no saved state)
 const DEFAULT_EXPANDED = ['core', 'financial'];
+
+// Count of nav items flagged as advanced (used for the badge count)
+const ADVANCED_ITEM_COUNT = NAV_ITEMS.filter((n) => n.advanced).length;
 
 // ============ CHEVRON SVG COMPONENT ============
 // Small inline SVG chevron — rotates 0deg (collapsed, pointing right)
@@ -256,19 +262,84 @@ function SectionGroup({
   );
 }
 
+// ============ ADVANCED TOGGLE CHEVRON ============
+// Points down when expanded, right when collapsed. Reuses the same SVG
+// shape as the section Chevron but sized slightly larger for the toggle button.
+function AdvancedChevron({ expanded }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 12 12"
+      fill="none"
+      className={
+        'shrink-0 transition-transform duration-300 ease-in-out ' +
+        (expanded ? 'rotate-180' : 'rotate-0')
+      }
+    >
+      <path
+        d="M2.5 4.5L6 8L9.5 4.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ============ HELPER: LOAD ADVANCED TOGGLE STATE ============
+// Reads persisted show-advanced boolean from localStorage.
+function loadAdvancedState() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = localStorage.getItem(ADVANCED_STORAGE_KEY);
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+}
+
+// ============ HELPER: SAVE ADVANCED TOGGLE STATE ============
+function saveAdvancedState(value) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ADVANCED_STORAGE_KEY, String(value));
+  } catch {
+    // Silent fail
+  }
+}
+
 // ============ MAIN SIDEBAR COMPONENT ============
 export default function Sidebar({ activeTab, onTabChange, completionBadges = {} }) {
-  // ---------- Group nav items by their section key ----------
+  // ---------- Advanced features toggle ----------
+  // When false, items with `advanced: true` are hidden from the sidebar
+  const [showAdvanced, setShowAdvanced] = useState(() => loadAdvancedState());
+
+  // Persist advanced toggle state whenever it changes
+  useEffect(() => {
+    saveAdvancedState(showAdvanced);
+  }, [showAdvanced]);
+
+  // ---------- Filter nav items based on advanced toggle ----------
+  // When showAdvanced is false, only show items WITHOUT the advanced flag.
+  // When showAdvanced is true, show everything.
+  const visibleItems = useMemo(() => {
+    if (showAdvanced) return NAV_ITEMS;
+    return NAV_ITEMS.filter((item) => !item.advanced);
+  }, [showAdvanced]);
+
+  // ---------- Group VISIBLE nav items by their section key ----------
   const groupedItems = useMemo(() => {
     const groups = {};
-    for (const item of NAV_ITEMS) {
+    for (const item of visibleItems) {
       if (!groups[item.section]) {
         groups[item.section] = [];
       }
       groups[item.section].push(item);
     }
     return groups;
-  }, []);
+  }, [visibleItems]);
 
   // ---------- Ordered section keys ----------
   const sectionKeys = useMemo(() => Object.keys(SECTION_LABELS), []);
@@ -283,9 +354,19 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
 
   // ---------- Auto-expand the group containing the active tab ----------
   // When activeTab changes (e.g., user clicks a link or navigates),
-  // make sure its parent section is expanded so the user can see it
+  // make sure its parent section is expanded so the user can see it.
+  // Also: if the active tab is an advanced item and advanced mode is off,
+  // auto-enable advanced mode so the user can see where they are.
   useEffect(() => {
     if (!activeTab) return;
+
+    // If the active tab is an advanced item, make sure advanced mode is on
+    const activeItem = NAV_ITEMS.find((n) => n.id === activeTab);
+    if (activeItem?.advanced && !showAdvanced) {
+      setShowAdvanced(true);
+      saveAdvancedState(true);
+    }
+
     const section = findSectionForTab(activeTab);
     if (section && !expandedSections.has(section)) {
       setExpandedSections((prev) => {
@@ -356,6 +437,52 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
             />
           );
         })}
+
+        {/* ============ ADVANCED FEATURES TOGGLE ============ */}
+        {/* Sits at the bottom of the nav list, before Settings.                */}
+        {/* Shows "Show More" with a count badge when collapsed, "Show Less"    */}
+        {/* when expanded. Persisted to localStorage so it survives refreshes.  */}
+        <div className="mt-2 pt-2 border-t border-[#2d3148]">
+          <button
+            onClick={() => setShowAdvanced((prev) => !prev)}
+            className={
+              'w-full flex items-center gap-2 px-2 md:px-3 py-2 rounded-md ' +
+              'text-xs font-medium transition-all duration-200 ' +
+              'text-[#6b7084] hover:text-[#9ca0b0] hover:bg-[#252836] ' +
+              'focus:outline-none focus:ring-1 focus:ring-[#4a7dff]/40 ' +
+              'cursor-pointer select-none'
+            }
+            title={showAdvanced ? 'Hide advanced features' : 'Show advanced features'}
+          >
+            {/* Icon: gear/wrench for advanced */}
+            <span className="text-sm shrink-0 w-6 text-center md:text-left">
+              {showAdvanced ? '▾' : '▸'}
+            </span>
+
+            {/* Label — hidden on mobile */}
+            <span className="hidden md:inline flex-1 text-left">
+              {showAdvanced ? 'Show Less' : 'Show More'}
+            </span>
+
+            {/* Count badge — only visible when collapsed, shows how many hidden */}
+            {!showAdvanced && (
+              <span
+                className={
+                  'hidden md:inline-flex items-center justify-center ' +
+                  'min-w-[28px] h-5 px-1.5 rounded-full text-[10px] font-semibold ' +
+                  'bg-[#4a7dff]/15 text-[#4a7dff]'
+                }
+              >
+                +{ADVANCED_ITEM_COUNT}
+              </span>
+            )}
+
+            {/* Chevron animation */}
+            <span className="hidden md:inline-flex">
+              <AdvancedChevron expanded={showAdvanced} />
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* ============ FOOTER ============ */}
