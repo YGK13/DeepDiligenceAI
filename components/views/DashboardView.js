@@ -61,6 +61,8 @@ import {
 } from '@/lib/scoring';
 import { SCORE_WEIGHTS, NAV_ITEMS } from '@/lib/constants';
 import RetryPanel from '@/components/ui/RetryPanel';
+import SuggestionsCard from '@/components/ui/SuggestionsCard';
+import { generateSuggestions } from '@/lib/suggestions';
 
 // ============ SCORE CATEGORY LABELS ============
 // Human-readable labels for each SCORE_WEIGHTS key.
@@ -94,7 +96,7 @@ function getScoreHex(score) {
 }
 
 // ============ COMPONENT ============
-export default function DashboardView({ company, onResearchAll, onRetrySections }) {
+export default function DashboardView({ company, onResearchAll, onRetrySections, onNavigate }) {
   // ============ CSV EXPORT STATE ============
   const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [csvExportMsg, setCsvExportMsg] = useState(''); // success or error message
@@ -299,6 +301,15 @@ export default function DashboardView({ company, onResearchAll, onRetrySections 
       { label: 'Ask', value: dl.roundSize ? `$${Number(dl.roundSize).toLocaleString()}` : '—' },
     ];
   }, [company]);
+
+  // ============ SMART SUGGESTIONS ============
+  // Generate actionable next-step suggestions based on the company's data
+  // completeness, scores, freshness and deal stage. Recalculates whenever
+  // the company object changes (field edits, score updates, stage changes).
+  const suggestions = useMemo(
+    () => generateSuggestions(company),
+    [company]
+  );
 
   return (
     <div className="space-y-6">
