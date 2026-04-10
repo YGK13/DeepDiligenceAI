@@ -1,18 +1,15 @@
 'use client';
 
 // ============================================================================
-// components/views/ComparisonView.js — Side-by-Side Company Comparison
+// components/views/ComparisonView.js — Side-by-Side Company Comparison Matrix
 // ============================================================================
-// Lets investors compare multiple portfolio companies at a glance.
-// Displays a score comparison table (all 12 SCORE_WEIGHTS categories) and
-// a key metrics comparison table (stage, sector, revenue, burn, team size, etc.)
-// side by side for 2-5 selected companies.
-//
-// WHY this view exists:
-// When an investor has 5-20 companies in their pipeline, they need a fast way
-// to stack-rank and compare. Viewing one dashboard at a time is slow. This view
-// puts the critical numbers in a single scrollable grid so you can spot the
-// strongest deal in seconds.
+// Enhanced comparison tool for VC IC (Investment Committee) meetings.
+// Features:
+//   1. Visual score heatmap with gradient-colored cells (red → amber → green)
+//   2. Key metrics comparison with best-in-class highlighting
+//   3. Verdict summary row (Strong Pass / Pass / Borderline / Weak / Fail)
+//   4. CSV export button for offline analysis
+//   5. Click-to-sort on any score category header
 //
 // Props:
 //   companies — full array of company objects from useCompanies hook
@@ -26,7 +23,6 @@ import { calculateOverallScore } from '@/lib/scoring';
 // SCORE SECTION LABELS
 // ============================================================================
 // Human-readable labels for each scored category, ordered by weight (heaviest first).
-// This ordering matches the intuition that Team > Product > Market > ... > Deal Terms.
 const SCORE_LABELS = {
   team:        'Team',
   product:     'Product',
@@ -43,24 +39,83 @@ const SCORE_LABELS = {
 };
 
 // ============================================================================
-// SCORE COLOR UTILITY
+// HEATMAP COLOR UTILITY
 // ============================================================================
-// Returns hex color for a 0-10 score using the 3-tier system specified:
-//   green (>=7), amber (>=4), red (<4)
-// This simplified 3-tier approach (vs. DashboardView's 5-tier) makes the
-// comparison table scannable — you want quick red/amber/green signals, not nuance.
-function getScoreHex(score) {
+// Returns a background color for heatmap cells on a smooth 1-10 gradient:
+//   1-3  = deep red  (#dc2626 → #ef4444)
+//   4-6  = amber     (#f59e0b → #eab308)
+//   7-10 = green     (#22c55e → #15803d)
+// Uses interpolation within each band for a smooth visual gradient rather
+// than hard 3-tier jumps. The returned object includes bg color and text color
+// (white for dark backgrounds, dark for light backgrounds).
+function getHeatmapStyle(score) {
   const num = parseFloat(score) || 0;
-  if (num >= 7) return '#34d399'; // green — strong
-  if (num >= 4) return '#f59e0b'; // amber — borderline
-  return '#ef4444';               // red — weak
+
+  // Clamp to 0-10
+  const clamped = Math.max(0, Math.min(10, num));
+
+  // Deep red (#991b1b) → Red (#dc2626) → Orange (#ea580c) → Amber (#d97706)
+  // → Yellow-green (#65a30d) → Green (#16a34a) → Deep green (#15803d)
+  // We use a stepped gradient with smooth transitions within each step.
+  let bg, text;
+
+  if (clamped <= 1) {
+    bg = '#991b1b'; // deep red
+    text = '#fecaca';
+  } else if (clamped <= 2) {
+    bg = '#b91c1c'; // red-800
+    text = '#fecaca';
+  } else if (clamped <= 3) {
+    bg = '#dc2626'; // red-600
+    text = '#fef2f2';
+  } else if (clamped <= 4) {
+    bg = '#ea580c'; // orange-600
+    text = '#fff7ed';
+  } else if (clamped <= 5) {
+    bg = '#d97706'; // amber-600
+    text = '#fffbeb';
+  } else if (clamped <= 6) {
+    bg = '#ca8a04'; // yellow-600
+    text = '#fefce8';
+  } else if (clamped <= 7) {
+    bg = '#65a30d'; // lime-600
+    text = '#f7fee7';
+  } else if (clamped <= 8) {
+    bg = '#16a34a'; // green-600
+    text = '#f0fdf4';
+  } else if (clamped <= 9) {
+    bg = '#15803d'; // green-700
+    text = '#dcfce7';
+  } else {
+    bg = '#166534'; // green-800
+    text = '#dcfce7';
+  }
+
+  return { backgroundColor: bg, color: text };
+}
+
+// ============================================================================
+// VERDICT UTILITY
+// ============================================================================
+// Maps an overall 0-10 score to an IC-ready verdict label and color.
+// These match the language VCs actually use in investment memos:
+//   9-10 = Strong Pass  (rare — exceptional deal)
+//   7-8.9 = Pass        (investable, proceed to term sheet)
+//   5-6.9 = Borderline  (needs more diligence or pass with reservations)
+//   3-4.9 = Weak        (significant concerns, likely pass)
+//   0-2.9 = Fail        (hard pass)
+function getVerdict(score) {
+  const num = parseFloat(score) || 0;
+  if (num >= 9) return { label: 'Strong Pass', bg: '#166534', text: '#dcfce7', border: '#15803d' };
+  if (num >= 7) return { label: 'Pass', bg: '#16a34a', text: '#f0fdf4', border: '#22c55e' };
+  if (num >= 5) return { label: 'Borderline', bg: '#d97706', text: '#fffbeb', border: '#f59e0b' };
+  if (num >= 3) return { label: 'Weak', bg: '#ea580c', text: '#fff7ed', border: '#f97316' };
+  return { label: 'Fail', bg: '#991b1b', text: '#fecaca', border: '#dc2626' };
 }
 
 // ============================================================================
 // HELPER: Extract company display name
 // ============================================================================
-// Companies store their name in overview.companyName or overview.name.
-// Falls back to "Unnamed" if neither exists. Used everywhere in this component.
 function getCompanyName(company) {
   return company?.overview?.companyName || company?.overview?.name || 'Unnamed';
 }
@@ -68,21 +123,17 @@ function getCompanyName(company) {
 // ============================================================================
 // HELPER: Format currency values for display
 // ============================================================================
-// Converts numeric values to human-readable currency strings.
-// e.g., 1500000 -> "$1.5M", 250000 -> "$250K", 0 -> "—"
 function formatCurrency(value) {
   const num = parseFloat(value);
-  if (!num || isNaN(num)) return '\u2014'; // em dash for missing data
+  if (!num || isNaN(num)) return '\u2014';
   if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
   if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
   return `$${num.toLocaleString()}`;
 }
 
 // ============================================================================
-// HELPER: Format generic values for the metrics table
+// HELPER: Format generic metric values
 // ============================================================================
-// Returns a display-ready string for any metric value.
-// Missing/empty values show an em dash so the table stays visually clean.
 function formatMetric(value) {
   if (value === null || value === undefined || value === '') return '\u2014';
   if (typeof value === 'number') return value.toLocaleString();
@@ -90,20 +141,165 @@ function formatMetric(value) {
 }
 
 // ============================================================================
+// HELPER: Parse a numeric value from a company metric (for best-value detection)
+// ============================================================================
+// Tries to extract a raw number from a potentially formatted value.
+// Returns NaN if the value cannot be parsed as a number.
+function parseNumeric(value) {
+  if (value === null || value === undefined || value === '') return NaN;
+  if (typeof value === 'number') return value;
+  // Strip currency symbols, commas, letters for parsing
+  const cleaned = String(value).replace(/[^0-9.\-]/g, '');
+  return parseFloat(cleaned);
+}
+
+// ============================================================================
+// KEY METRICS DEFINITION
+// ============================================================================
+// Defines the rows for the key metrics comparison section.
+// Each entry specifies:
+//   label       — displayed in the first column
+//   getValue    — function to extract raw value from a company
+//   format      — function to format value for display
+//   higherBetter — true if a higher number is "better" (green highlight)
+//                  false if lower is better (e.g., burn rate)
+//                  null if not comparable (e.g., year founded, stage)
+const KEY_METRICS = [
+  {
+    key: 'revenue',
+    label: 'Revenue (ARR / Monthly)',
+    getValue: (c) => {
+      // Check multiple possible locations for revenue data
+      const monthly = parseFloat(c?.traction?.monthlyRevenue) || 0;
+      const arr = parseFloat(c?.traction?.arr || c?.financial?.arr) || 0;
+      // Prefer ARR if available, otherwise annualize monthly
+      return arr || (monthly * 12);
+    },
+    format: (v) => formatCurrency(v),
+    higherBetter: true,
+  },
+  {
+    key: 'teamSize',
+    label: 'Team Size',
+    getValue: (c) => parseFloat(c?.team?.totalTeamSize) || 0,
+    format: (v) => (v ? v.toLocaleString() : '\u2014'),
+    higherBetter: true,
+  },
+  {
+    key: 'totalRaised',
+    label: 'Total Raised',
+    getValue: (c) => {
+      const fromFinancial = parseFloat(c?.financial?.totalRaised) || 0;
+      const fromDeal = parseFloat(c?.deal?.totalRaised) || 0;
+      return fromFinancial || fromDeal;
+    },
+    format: (v) => formatCurrency(v),
+    higherBetter: true,
+  },
+  {
+    key: 'burnRate',
+    label: 'Burn Rate (Monthly)',
+    getValue: (c) => parseFloat(c?.financial?.monthlyBurnRate) || 0,
+    format: (v) => formatCurrency(v),
+    higherBetter: false, // lower burn = better
+  },
+  {
+    key: 'runway',
+    label: 'Runway (Months)',
+    getValue: (c) => {
+      // Calculate runway: cash / monthly burn
+      const cash = parseFloat(c?.financial?.cashOnHand || c?.financial?.currentCash) || 0;
+      const burn = parseFloat(c?.financial?.monthlyBurnRate) || 0;
+      if (burn <= 0) return 0;
+      return Math.round(cash / burn);
+    },
+    format: (v) => (v ? `${v} mo` : '\u2014'),
+    higherBetter: true,
+  },
+  {
+    key: 'yearFounded',
+    label: 'Founded Year',
+    getValue: (c) => parseFloat(c?.overview?.yearFounded) || 0,
+    format: (v) => (v ? String(v) : '\u2014'),
+    higherBetter: null, // not comparable
+  },
+];
+
+// ============================================================================
 // MAX / MIN SELECTION CONSTANTS
 // ============================================================================
-const MIN_COMPARE = 2;  // Need at least 2 companies to compare
-const MAX_COMPARE = 5;  // Cap at 5 to keep the table readable
+const MIN_COMPARE = 2;
+const MAX_COMPARE = 5;
+
+// ============================================================================
+// CSV EXPORT UTILITY
+// ============================================================================
+// Builds a CSV string from the comparison data and triggers a browser download.
+// Includes: score heatmap data, key metrics, overall score and verdict.
+function exportComparisonCSV(selectedCompanies) {
+  const rows = [];
+
+  // Header row: Category, Company1, Company2, ...
+  const names = selectedCompanies.map(getCompanyName);
+  rows.push(['Category', ...names].join(','));
+
+  // Score rows
+  for (const [sectionKey, config] of Object.entries(SCORE_WEIGHTS)) {
+    const label = SCORE_LABELS[sectionKey] || sectionKey;
+    const scores = selectedCompanies.map((c) => {
+      const section = c?.[sectionKey] || {};
+      return (parseFloat(section[config.field]) || 0).toFixed(1);
+    });
+    rows.push([label, ...scores].join(','));
+  }
+
+  // Overall score row
+  const overalls = selectedCompanies.map((c) => calculateOverallScore(c).toFixed(1));
+  rows.push(['Overall Score', ...overalls].join(','));
+
+  // Verdict row
+  const verdicts = selectedCompanies.map((c) => {
+    const score = calculateOverallScore(c);
+    return getVerdict(score).label;
+  });
+  rows.push(['Verdict', ...verdicts].join(','));
+
+  // Blank separator
+  rows.push('');
+  rows.push(['Key Metrics', ...names].join(','));
+
+  // Key metrics rows
+  for (const metric of KEY_METRICS) {
+    const values = selectedCompanies.map((c) => {
+      const raw = metric.getValue(c);
+      return metric.format(raw);
+    });
+    // Escape values that might contain commas
+    const escaped = values.map((v) => `"${v}"`);
+    rows.push([metric.label, ...escaped].join(','));
+  }
+
+  // Build CSV blob and trigger download
+  const csvContent = rows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `duedrill-comparison-${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 // ============================================================================
 // COMPONENT
 // ============================================================================
 export default function ComparisonView({ companies = [] }) {
+
   // ==========================================================================
   // STATE: Which companies are selected for comparison
   // ==========================================================================
-  // Initialize with first 2 company IDs (if available).
-  // Using a lazy initializer so we only compute this once on mount.
   const [selectedIds, setSelectedIds] = useState(() => {
     if (companies.length >= 2) return [companies[0].id, companies[1].id];
     if (companies.length === 1) return [companies[0].id];
@@ -111,33 +307,92 @@ export default function ComparisonView({ companies = [] }) {
   });
 
   // ==========================================================================
+  // STATE: Sort configuration for the score table
+  // ==========================================================================
+  // sortKey = null means no custom sort (show in selection order)
+  // sortKey = 'team' | 'product' | ... | 'overall' means sort by that score desc
+  const [sortKey, setSortKey] = useState(null);
+
+  // ==========================================================================
   // DERIVED: The actual company objects for selected IDs
   // ==========================================================================
-  // Filter + preserve selection order so columns stay consistent.
   const selectedCompanies = useMemo(() => {
-    return selectedIds
+    const mapped = selectedIds
       .map((id) => companies.find((c) => c.id === id))
-      .filter(Boolean); // Remove any IDs that no longer exist in the companies array
-  }, [selectedIds, companies]);
+      .filter(Boolean);
+
+    // If a sort key is active, sort the companies by that score descending
+    if (!sortKey) return mapped;
+
+    return [...mapped].sort((a, b) => {
+      if (sortKey === 'overall') {
+        return calculateOverallScore(b) - calculateOverallScore(a);
+      }
+      const config = SCORE_WEIGHTS[sortKey];
+      if (!config) return 0;
+      const scoreA = parseFloat(a?.[sortKey]?.[config.field]) || 0;
+      const scoreB = parseFloat(b?.[sortKey]?.[config.field]) || 0;
+      return scoreB - scoreA;
+    });
+  }, [selectedIds, companies, sortKey]);
 
   // ==========================================================================
   // HANDLER: Toggle a company's selection on/off
   // ==========================================================================
-  const handleToggle = useCallback(
-    (companyId) => {
-      setSelectedIds((prev) => {
-        // If already selected, remove it
-        if (prev.includes(companyId)) {
-          return prev.filter((id) => id !== companyId);
-        }
-        // If at max, don't add more
-        if (prev.length >= MAX_COMPARE) return prev;
-        // Add it
-        return [...prev, companyId];
+  const handleToggle = useCallback((companyId) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(companyId)) {
+        return prev.filter((id) => id !== companyId);
+      }
+      if (prev.length >= MAX_COMPARE) return prev;
+      return [...prev, companyId];
+    });
+  }, []);
+
+  // ==========================================================================
+  // HANDLER: Sort by a score category (toggle: click once = sort, click again = unsort)
+  // ==========================================================================
+  const handleSort = useCallback((key) => {
+    setSortKey((prev) => (prev === key ? null : key));
+  }, []);
+
+  // ==========================================================================
+  // DERIVED: Find "best" value index for each key metric row
+  // ==========================================================================
+  // Returns a Map<metricKey, Set<companyIndex>> where the set contains indices
+  // of companies that have the best (highest or lowest) value for that metric.
+  const bestMetricIndices = useMemo(() => {
+    const result = new Map();
+
+    for (const metric of KEY_METRICS) {
+      // Skip metrics that aren't comparable (like year founded)
+      if (metric.higherBetter === null) {
+        result.set(metric.key, new Set());
+        continue;
+      }
+
+      const values = selectedCompanies.map((c) => metric.getValue(c));
+      const validValues = values.filter((v) => v > 0);
+
+      if (validValues.length === 0) {
+        result.set(metric.key, new Set());
+        continue;
+      }
+
+      const bestValue = metric.higherBetter
+        ? Math.max(...validValues)
+        : Math.min(...validValues);
+
+      const bestSet = new Set();
+      values.forEach((v, idx) => {
+        if (v === bestValue && v > 0) bestSet.add(idx);
       });
-    },
-    []
-  );
+
+      result.set(metric.key, bestSet);
+    }
+
+    return result;
+  }, [selectedCompanies]);
 
   // ==========================================================================
   // EMPTY STATE: Not enough companies in portfolio to compare
@@ -166,10 +421,10 @@ export default function ComparisonView({ companies = [] }) {
   // ==========================================================================
   return (
     <div className="space-y-6">
+
       {/* ================================================================== */}
       {/* SECTION 1: COMPANY SELECTION CHECKBOXES                            */}
       {/* ================================================================== */}
-      {/* Users pick 2-5 companies to compare. Checkbox UI with company names. */}
       <div
         className="rounded-lg p-5"
         style={{
@@ -177,12 +432,35 @@ export default function ComparisonView({ companies = [] }) {
           border: '1px solid #2d3148',
         }}
       >
-        <h2
-          className="text-xs font-semibold uppercase tracking-wider mb-4"
-          style={{ color: '#9ca0b0' }}
-        >
-          Select Companies to Compare (min {MIN_COMPARE}, max {MAX_COMPARE})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: '#9ca0b0' }}
+          >
+            Select Companies to Compare (min {MIN_COMPARE}, max {MAX_COMPARE})
+          </h2>
+
+          {/* Export CSV button — only show when comparison is active */}
+          {selectedCompanies.length >= MIN_COMPARE && (
+            <button
+              onClick={() => exportComparisonCSV(selectedCompanies)}
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all duration-150 hover:brightness-110"
+              style={{
+                background: '#4a7dff',
+                color: '#e8e9ed',
+                border: '1px solid #5a8aff',
+              }}
+            >
+              {/* Download icon (SVG) */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export Comparison
+            </button>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-3">
           {companies.map((company) => {
@@ -196,9 +474,7 @@ export default function ComparisonView({ companies = [] }) {
                   'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium cursor-pointer ' +
                   'transition-all duration-150 select-none ' +
                   (isDisabled ? 'opacity-40 cursor-not-allowed ' : '') +
-                  (isSelected
-                    ? 'ring-2 ring-[#4a7dff] '
-                    : 'hover:bg-[#252836] ')
+                  (isSelected ? 'ring-2 ring-[#4a7dff] ' : 'hover:bg-[#252836] ')
                 }
                 style={{
                   background: isSelected ? '#4a7dff20' : '#252836',
@@ -219,21 +495,36 @@ export default function ComparisonView({ companies = [] }) {
           })}
         </div>
 
-        {/* Selection count indicator */}
-        <p className="text-xs mt-3" style={{ color: '#6b7084' }}>
-          {selectedIds.length} of {companies.length} selected
-          {selectedIds.length < MIN_COMPARE && (
-            <span style={{ color: '#ef4444' }}>
-              {' '}&mdash; Select at least {MIN_COMPARE} to compare
-            </span>
+        {/* Selection count + sort indicator */}
+        <div className="flex items-center justify-between mt-3">
+          <p className="text-xs" style={{ color: '#6b7084' }}>
+            {selectedIds.length} of {companies.length} selected
+            {selectedIds.length < MIN_COMPARE && (
+              <span style={{ color: '#ef4444' }}>
+                {' '}&mdash; Select at least {MIN_COMPARE} to compare
+              </span>
+            )}
+          </p>
+          {sortKey && (
+            <p className="text-xs" style={{ color: '#4a7dff' }}>
+              Sorted by: {sortKey === 'overall' ? 'Overall Score' : (SCORE_LABELS[sortKey] || sortKey)}
+              <button
+                onClick={() => setSortKey(null)}
+                className="ml-2 underline hover:no-underline"
+                style={{ color: '#9ca0b0' }}
+              >
+                clear
+              </button>
+            </p>
           )}
-        </p>
+        </div>
       </div>
 
       {/* ================================================================== */}
-      {/* SECTION 2: SCORE COMPARISON TABLE                                  */}
+      {/* SECTION 2: SCORE HEATMAP TABLE                                     */}
       {/* ================================================================== */}
-      {/* Only render when we have the minimum selection */}
+      {/* Color-coded cells: deep red (1-3) → amber (4-6) → deep green (7-10) */}
+      {/* Click any category header to sort companies by that score (desc)    */}
       {selectedCompanies.length >= MIN_COMPARE && (
         <div
           className="rounded-lg overflow-hidden"
@@ -247,29 +538,27 @@ export default function ComparisonView({ companies = [] }) {
               className="text-xs font-semibold uppercase tracking-wider"
               style={{ color: '#9ca0b0' }}
             >
-              Score Comparison (0-10)
+              Score Heatmap (0-10) &mdash; Click headers to sort
             </h2>
           </div>
 
-          {/* Scrollable table wrapper for mobile responsiveness */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm" style={{ minWidth: '500px' }}>
+
               {/* ---- Table Header: Company Names ---- */}
               <thead>
-                <tr style={{ borderBottom: '1px solid #2d3148' }}>
-                  {/* Row label column */}
+                <tr style={{ borderBottom: '2px solid #2d3148' }}>
                   <th
                     className="text-left px-5 py-3 font-semibold text-xs uppercase tracking-wider"
                     style={{ color: '#6b7084', width: '180px', minWidth: '140px' }}
                   >
                     Category
                   </th>
-                  {/* One column per selected company */}
                   {selectedCompanies.map((company) => (
                     <th
                       key={company.id}
                       className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wider"
-                      style={{ color: '#e8e9ed', minWidth: '100px' }}
+                      style={{ color: '#e8e9ed', minWidth: '110px' }}
                     >
                       {getCompanyName(company)}
                     </th>
@@ -279,50 +568,71 @@ export default function ComparisonView({ companies = [] }) {
 
               <tbody>
                 {/* ---- Score rows: one per SCORE_WEIGHTS category ---- */}
-                {Object.entries(SCORE_WEIGHTS).map(([sectionKey, config], idx) => (
-                  <tr
-                    key={sectionKey}
-                    style={{
-                      borderBottom: '1px solid #2d314830',
-                      // Alternate row background for readability in dark theme
-                      background: idx % 2 === 0 ? 'transparent' : '#252836',
-                    }}
-                  >
-                    {/* Category label */}
-                    <td
-                      className="px-5 py-2.5 font-medium"
-                      style={{ color: '#9ca0b0' }}
+                {Object.entries(SCORE_WEIGHTS).map(([sectionKey, config]) => {
+                  const isActive = sortKey === sectionKey;
+
+                  return (
+                    <tr
+                      key={sectionKey}
+                      style={{
+                        borderBottom: '1px solid #2d314830',
+                      }}
                     >
-                      {SCORE_LABELS[sectionKey] || sectionKey}
-                      {/* Show weight as subtle percentage */}
-                      <span
-                        className="ml-2 text-[10px]"
-                        style={{ color: '#6b7084' }}
+                      {/* Category label — clickable to sort */}
+                      <td
+                        className="px-5 py-2.5 font-medium cursor-pointer select-none transition-colors duration-100"
+                        style={{
+                          color: isActive ? '#4a7dff' : '#9ca0b0',
+                          background: isActive ? '#4a7dff10' : 'transparent',
+                        }}
+                        onClick={() => handleSort(sectionKey)}
+                        title={`Click to sort by ${SCORE_LABELS[sectionKey] || sectionKey}`}
                       >
-                        ({Math.round(config.weight * 100)}%)
-                      </span>
-                    </td>
-
-                    {/* Score cells — one per selected company */}
-                    {selectedCompanies.map((company) => {
-                      const sectionData = company?.[sectionKey] || {};
-                      const scoreValue = parseFloat(sectionData[config.field]) || 0;
-                      const color = getScoreHex(scoreValue);
-
-                      return (
-                        <td
-                          key={company.id}
-                          className="text-center px-4 py-2.5 font-bold"
-                          style={{ color }}
+                        {/* Sort arrow indicator */}
+                        <span className="inline-block w-4 text-center mr-1" style={{ fontSize: '10px' }}>
+                          {isActive ? '\u25BC' : '\u25B8'}
+                        </span>
+                        {SCORE_LABELS[sectionKey] || sectionKey}
+                        {/* Weight percentage */}
+                        <span
+                          className="ml-2 text-[10px]"
+                          style={{ color: '#6b7084' }}
                         >
-                          {scoreValue.toFixed(1)}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                          ({Math.round(config.weight * 100)}%)
+                        </span>
+                      </td>
 
-                {/* ---- Bottom row: Overall Weighted Score ---- */}
+                      {/* Heatmap score cells */}
+                      {selectedCompanies.map((company) => {
+                        const sectionData = company?.[sectionKey] || {};
+                        const scoreValue = parseFloat(sectionData[config.field]) || 0;
+                        const heatStyle = getHeatmapStyle(scoreValue);
+
+                        return (
+                          <td
+                            key={company.id}
+                            className="text-center px-2 py-2"
+                          >
+                            {/* Score chip with heatmap background */}
+                            <div
+                              className="inline-flex items-center justify-center rounded-md font-bold text-sm"
+                              style={{
+                                ...heatStyle,
+                                width: '52px',
+                                height: '32px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                              }}
+                            >
+                              {scoreValue.toFixed(1)}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+
+                {/* ---- Overall Score row ---- */}
                 <tr
                   style={{
                     borderTop: '2px solid #4a7dff',
@@ -330,22 +640,36 @@ export default function ComparisonView({ companies = [] }) {
                   }}
                 >
                   <td
-                    className="px-5 py-3 font-bold text-xs uppercase tracking-wider"
-                    style={{ color: '#4a7dff' }}
+                    className="px-5 py-3 font-bold text-xs uppercase tracking-wider cursor-pointer select-none"
+                    style={{ color: sortKey === 'overall' ? '#4a7dff' : '#4a7dff' }}
+                    onClick={() => handleSort('overall')}
+                    title="Click to sort by Overall Score"
                   >
+                    <span className="inline-block w-4 text-center mr-1" style={{ fontSize: '10px' }}>
+                      {sortKey === 'overall' ? '\u25BC' : '\u25B8'}
+                    </span>
                     Overall Score
                   </td>
                   {selectedCompanies.map((company) => {
                     const overall = calculateOverallScore(company);
-                    const color = getScoreHex(overall);
+                    const heatStyle = getHeatmapStyle(overall);
 
                     return (
                       <td
                         key={company.id}
-                        className="text-center px-4 py-3 font-bold text-lg"
-                        style={{ color }}
+                        className="text-center px-2 py-3"
                       >
-                        {overall.toFixed(1)}
+                        <div
+                          className="inline-flex items-center justify-center rounded-md font-bold text-lg"
+                          style={{
+                            ...heatStyle,
+                            width: '60px',
+                            height: '38px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                          }}
+                        >
+                          {overall.toFixed(1)}
+                        </div>
                       </td>
                     );
                   })}
@@ -359,8 +683,8 @@ export default function ComparisonView({ companies = [] }) {
       {/* ================================================================== */}
       {/* SECTION 3: KEY METRICS COMPARISON                                  */}
       {/* ================================================================== */}
-      {/* Non-score data points that investors use for quick filtering:       */}
-      {/* stage, sector, founding year, revenue, burn, team size, funding.    */}
+      {/* Non-score data: revenue, team size, raised, burn, runway, founded. */}
+      {/* Best value in each row is highlighted with a green border/glow.    */}
       {selectedCompanies.length >= MIN_COMPARE && (
         <div
           className="rounded-lg overflow-hidden"
@@ -378,10 +702,8 @@ export default function ComparisonView({ companies = [] }) {
             </h2>
           </div>
 
-          {/* Scrollable table wrapper for mobile responsiveness */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm" style={{ minWidth: '500px' }}>
-              {/* ---- Table Header: Company Names (same as scores table) ---- */}
               <thead>
                 <tr style={{ borderBottom: '1px solid #2d3148' }}>
                   <th
@@ -394,7 +716,7 @@ export default function ComparisonView({ companies = [] }) {
                     <th
                       key={company.id}
                       className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wider"
-                      style={{ color: '#e8e9ed', minWidth: '100px' }}
+                      style={{ color: '#e8e9ed', minWidth: '110px' }}
                     >
                       {getCompanyName(company)}
                     </th>
@@ -403,117 +725,127 @@ export default function ComparisonView({ companies = [] }) {
               </thead>
 
               <tbody>
-                {/* ---- Stage ---- */}
-                <MetricRow
-                  label="Stage"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatMetric(c?.overview?.stage)}
-                  rowIndex={0}
-                />
+                {KEY_METRICS.map((metric, rowIndex) => {
+                  const bestSet = bestMetricIndices.get(metric.key) || new Set();
 
-                {/* ---- Sector ---- */}
-                <MetricRow
-                  label="Sector"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatMetric(c?.overview?.sector)}
-                  rowIndex={1}
-                />
+                  return (
+                    <tr
+                      key={metric.key}
+                      style={{
+                        borderBottom: '1px solid #2d314830',
+                        background: rowIndex % 2 === 0 ? 'transparent' : '#252836',
+                      }}
+                    >
+                      {/* Metric label */}
+                      <td
+                        className="px-5 py-2.5 font-medium"
+                        style={{ color: '#9ca0b0' }}
+                      >
+                        {metric.label}
+                      </td>
 
-                {/* ---- Year Founded ---- */}
-                <MetricRow
-                  label="Year Founded"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatMetric(c?.overview?.yearFounded)}
-                  rowIndex={2}
-                />
+                      {/* Value cells — best value gets green highlight */}
+                      {selectedCompanies.map((company, idx) => {
+                        const rawValue = metric.getValue(company);
+                        const displayValue = metric.format(rawValue);
+                        const isBest = bestSet.has(idx);
 
-                {/* ---- Monthly Revenue ---- */}
-                <MetricRow
-                  label="Monthly Revenue"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatCurrency(c?.traction?.monthlyRevenue)}
-                  rowIndex={3}
-                />
-
-                {/* ---- Monthly Burn Rate ---- */}
-                <MetricRow
-                  label="Monthly Burn Rate"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatCurrency(c?.financial?.monthlyBurnRate)}
-                  rowIndex={4}
-                />
-
-                {/* ---- Team Size ---- */}
-                <MetricRow
-                  label="Team Size"
-                  companies={selectedCompanies}
-                  getValue={(c) => formatMetric(c?.team?.totalTeamSize)}
-                  rowIndex={5}
-                />
-
-                {/* ---- Funding Raised ---- */}
-                {/* Check both financial.totalRaised and deal.totalRaised */}
-                {/* because different companies may store this in different places */}
-                <MetricRow
-                  label="Funding Raised"
-                  companies={selectedCompanies}
-                  getValue={(c) => {
-                    const fromFinancial = c?.financial?.totalRaised;
-                    const fromDeal = c?.deal?.totalRaised;
-                    // Prefer financial.totalRaised, fall back to deal.totalRaised
-                    return formatCurrency(fromFinancial || fromDeal);
-                  }}
-                  rowIndex={6}
-                />
+                        return (
+                          <td
+                            key={company.id}
+                            className="text-center px-4 py-2.5"
+                          >
+                            <span
+                              className="inline-block px-3 py-1 rounded-md font-medium text-sm"
+                              style={{
+                                color: isBest ? '#dcfce7' : '#e8e9ed',
+                                background: isBest ? '#16a34a20' : 'transparent',
+                                border: isBest ? '1px solid #16a34a' : '1px solid transparent',
+                                boxShadow: isBest ? '0 0 8px rgba(34, 197, 94, 0.2)' : 'none',
+                              }}
+                            >
+                              {displayValue}
+                            </span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-// ============================================================================
-// MetricRow — Reusable table row for the key metrics section
-// ============================================================================
-// WHY a separate component? Keeps the JSX in the main component clean and
-// avoids repeating the same <tr>/<td> pattern 7 times. Each row has:
-//   - A label cell on the left
-//   - One value cell per selected company
-//   - Alternating row backgrounds for readability
-//
-// Props:
-//   label      — string displayed in the first column
-//   companies  — array of selected company objects
-//   getValue   — function(company) => display string for that company
-//   rowIndex   — numeric index for alternating row backgrounds
-function MetricRow({ label, companies, getValue, rowIndex }) {
-  return (
-    <tr
-      style={{
-        borderBottom: '1px solid #2d314830',
-        background: rowIndex % 2 === 0 ? 'transparent' : '#252836',
-      }}
-    >
-      {/* Metric label */}
-      <td
-        className="px-5 py-2.5 font-medium"
-        style={{ color: '#9ca0b0' }}
-      >
-        {label}
-      </td>
-
-      {/* Value cells — one per company */}
-      {companies.map((company) => (
-        <td
-          key={company.id}
-          className="text-center px-4 py-2.5"
-          style={{ color: '#e8e9ed' }}
+      {/* ================================================================== */}
+      {/* SECTION 4: VERDICT SUMMARY ROW                                     */}
+      {/* ================================================================== */}
+      {/* Large verdict badges for each company: Strong Pass / Pass / etc.   */}
+      {/* Color-coded to match the IC decision language.                     */}
+      {selectedCompanies.length >= MIN_COMPARE && (
+        <div
+          className="rounded-lg p-5"
+          style={{
+            background: '#1e2130',
+            border: '1px solid #2d3148',
+          }}
         >
-          {getValue(company)}
-        </td>
-      ))}
-    </tr>
+          <h2
+            className="text-xs font-semibold uppercase tracking-wider mb-4"
+            style={{ color: '#9ca0b0' }}
+          >
+            IC Verdict Summary
+          </h2>
+
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${selectedCompanies.length}, 1fr)` }}>
+            {selectedCompanies.map((company) => {
+              const overall = calculateOverallScore(company);
+              const verdict = getVerdict(overall);
+
+              return (
+                <div
+                  key={company.id}
+                  className="rounded-lg p-4 text-center transition-all duration-200"
+                  style={{
+                    background: verdict.bg + '18', // 18 = ~10% alpha hex
+                    border: `2px solid ${verdict.border}`,
+                  }}
+                >
+                  {/* Company name */}
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wider mb-2 truncate"
+                    style={{ color: '#9ca0b0' }}
+                    title={getCompanyName(company)}
+                  >
+                    {getCompanyName(company)}
+                  </p>
+
+                  {/* Overall score */}
+                  <p
+                    className="text-3xl font-bold mb-1"
+                    style={{ color: verdict.text }}
+                  >
+                    {overall.toFixed(1)}
+                  </p>
+
+                  {/* Verdict label badge */}
+                  <div
+                    className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
+                    style={{
+                      background: verdict.bg,
+                      color: verdict.text,
+                      boxShadow: `0 2px 8px ${verdict.border}40`,
+                    }}
+                  >
+                    {verdict.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
