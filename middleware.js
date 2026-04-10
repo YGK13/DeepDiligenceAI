@@ -53,6 +53,8 @@ const PUBLIC_ROUTES = [
   '/auth/confirm',
   '/api/stripe/webhook',
   '/api/waitlist',
+  '/share/',
+  '/api/share/',
 ]
 
 // ============================================================================

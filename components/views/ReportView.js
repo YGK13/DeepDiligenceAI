@@ -16,7 +16,7 @@
 //   company — full company data object with section sub-objects (from schemas.js)
 // ============================================================================
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { calculateOverallScore, getScoreVerdict } from '@/lib/scoring';
 import { SCORE_WEIGHTS } from '@/lib/constants';
 
