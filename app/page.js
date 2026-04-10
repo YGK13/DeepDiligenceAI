@@ -1068,7 +1068,7 @@ export default function HomePage() {
 
     // Special views (not section editors)
     if (activeTab === 'dashboard') {
-      return <DashboardView company={company} onResearchAll={handleResearchAll} onRetrySections={handleRetrySections} />;
+      return <DashboardView company={company} onResearchAll={handleResearchAll} onRetrySections={handleRetrySections} onNavigate={setActiveTab} />;
     }
     if (activeTab === 'report') {
       return <ReportView company={company} />;

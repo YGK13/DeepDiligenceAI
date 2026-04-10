@@ -437,6 +437,16 @@ export default function DashboardView({ company, onResearchAll, onRetrySections,
         />
       )}
 
+      {/* ============ SECTION 0A: SMART SUGGESTIONS ============ */}
+      {/* Actionable next-step suggestions based on data completeness,
+          section scores, data freshness and deal stage. Shows up to 5
+          prioritized suggestions with action buttons that navigate to
+          the relevant tab. Collapses to top 3 with a "Show more" toggle. */}
+      <SuggestionsCard
+        suggestions={suggestions}
+        onNavigate={onNavigate}
+      />
+
       {/* ============ SECTION 0B: KEY METRICS ROW ============ */}
       {/* Quick-glance metrics strip — the most important numbers at a glance */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
