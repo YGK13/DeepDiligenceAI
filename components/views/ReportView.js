@@ -487,6 +487,71 @@ export default function ReportView({ company }) {
     }
   }, [company]);
 
+  // ============ SHARE REPORT STATE ============
+  // Controls the share modal visibility, loading state and generated URL
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [shareError, setShareError] = useState('');
+  const [shareCopied, setShareCopied] = useState(false);
+
+  // ============ SHARE REPORT HANDLER ============
+  // Calls /api/share/create to generate a shareable link for this report.
+  // The API snapshots the current company data so the shared version is
+  // frozen in time, even if the analyst later updates the DD record.
+  const handleShareReport = useCallback(async () => {
+    if (!company) return;
+    setIsSharing(true);
+    setShareError('');
+
+    try {
+      const response = await fetch('/api/share/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: company.id || company.overview?.companyName || null,
+          companyData: company,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create share link');
+      }
+
+      setShareUrl(data.shareUrl);
+      setShareModalOpen(true);
+    } catch (err) {
+      setShareError(err.message);
+      setShareModalOpen(true);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [company]);
+
+  // ============ COPY TO CLIPBOARD HANDLER ============
+  const handleCopyShareUrl = useCallback(async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = shareUrl;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    }
+  }, [shareUrl]);
+
   // ============ CHECK IF FIELD IS EMPTY / DEFAULT ============
   // Returns true for values that should be skipped in the report.
   // Skips empty strings, null, undefined. Does NOT skip numeric scores
@@ -551,55 +616,199 @@ export default function ReportView({ company }) {
       `}</style>
 
       {/* ============ PRINT BUTTON + EXPORT CONTROLS ============ */}
-      <div className="flex justify-between items-center mb-6 print:hidden">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6 print:hidden">
         <p className="text-[#6b7084] text-xs">
           Confidential Investment Memorandum
         </p>
-        <button
-          onClick={handlePrint}
-          className={
-            'inline-flex items-center justify-center gap-2 ' +
-            'font-semibold rounded-lg border border-transparent ' +
-            'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
-            'bg-[#4a7dff] text-white hover:bg-[#3d6be6] active:bg-[#3560d4] ' +
-            'shadow-lg shadow-[#4a7dff]/20'
-          }
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-          </svg>
-          Print Report
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Print button */}
+          <button
+            onClick={handlePrint}
+            className={
+              'inline-flex items-center justify-center gap-2 ' +
+              'font-semibold rounded-lg border border-transparent ' +
+              'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
+              'bg-[#4a7dff] text-white hover:bg-[#3d6be6] active:bg-[#3560d4] ' +
+              'shadow-lg shadow-[#4a7dff]/20'
+            }
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print Report
+          </button>
 
-        {/* Export PDF button — server-side generation */}
-        <button
-          onClick={handleExportPDF}
-          disabled={isExporting}
-          className={
-            'inline-flex items-center justify-center gap-2 ' +
-            'font-semibold rounded-lg border border-transparent ' +
-            'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
-            (isExporting
-              ? 'bg-[#34d399]/40 text-white/60 cursor-not-allowed'
-              : 'bg-[#34d399] text-[#0f1117] hover:bg-[#2db886] active:bg-[#27a377] ' +
-                'shadow-lg shadow-[#34d399]/20')
-          }
-        >
-          {isExporting ? (
-            <>
-              <span className="w-3 h-3 rounded-full border-2 border-[#0f1117] border-t-transparent animate-spin" />
-              Generating PDF...
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Export PDF
-            </>
-          )}
-        </button>
+          {/* Export PDF button */}
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className={
+              'inline-flex items-center justify-center gap-2 ' +
+              'font-semibold rounded-lg border border-transparent ' +
+              'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
+              (isExporting
+                ? 'bg-[#34d399]/40 text-white/60 cursor-not-allowed'
+                : 'bg-[#34d399] text-[#0f1117] hover:bg-[#2db886] active:bg-[#27a377] ' +
+                  'shadow-lg shadow-[#34d399]/20')
+            }
+          >
+            {isExporting ? (
+              <>
+                <span className="w-3 h-3 rounded-full border-2 border-[#0f1117] border-t-transparent animate-spin" />
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export PDF
+              </>
+            )}
+          </button>
+
+          {/* Share Report button */}
+          <button
+            onClick={handleShareReport}
+            disabled={isSharing}
+            className={
+              'inline-flex items-center justify-center gap-2 ' +
+              'font-semibold rounded-lg border border-transparent ' +
+              'py-2.5 px-5 text-sm transition-all duration-200 cursor-pointer ' +
+              (isSharing
+                ? 'bg-[#a78bfa]/40 text-white/60 cursor-not-allowed'
+                : 'bg-[#a78bfa] text-white hover:bg-[#9061f9] active:bg-[#7c3aed] ' +
+                  'shadow-lg shadow-[#a78bfa]/20')
+            }
+          >
+            {isSharing ? (
+              <>
+                <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                Creating Link...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.439a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.25 8.81" />
+                </svg>
+                Share Report
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* ============ SHARE MODAL ============ */}
+      {/* Overlay modal showing the generated share URL with copy-to-clipboard */}
+      {shareModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center print:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              setShareModalOpen(false);
+              setShareError('');
+              setShareCopied(false);
+            }}
+          />
+
+          {/* Modal content */}
+          <div className="relative bg-[#1e2130] border border-[#2d3148] rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl shadow-black/40">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShareModalOpen(false);
+                setShareError('');
+                setShareCopied(false);
+              }}
+              className="absolute top-4 right-4 text-[#6b7084] hover:text-[#e8e9ed] transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {shareError ? (
+              <>
+                {/* Error state */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[#ef4444]/10 border border-[#ef4444]/20 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-[#ef4444]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#e8e9ed] text-lg font-bold">Share Failed</h3>
+                    <p className="text-[#9ca0b0] text-sm">{shareError}</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Success state */}
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-full bg-[#34d399]/10 border border-[#34d399]/20 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-[#34d399]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.439a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.25 8.81" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[#e8e9ed] text-lg font-bold">Share Link Created</h3>
+                    <p className="text-[#9ca0b0] text-sm">
+                      Anyone with this link can view a read-only copy of this report.
+                    </p>
+                  </div>
+                </div>
+
+                {/* URL display + copy button */}
+                <div className="flex items-stretch gap-2 mb-4">
+                  <div className="flex-1 bg-[#252836] border border-[#2d3148] rounded-lg px-4 py-3 overflow-hidden">
+                    <p className="text-[#e8e9ed] text-sm font-mono truncate select-all">
+                      {shareUrl}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleCopyShareUrl}
+                    className={
+                      'inline-flex items-center justify-center gap-1.5 px-4 rounded-lg ' +
+                      'text-sm font-semibold transition-all duration-200 shrink-0 ' +
+                      (shareCopied
+                        ? 'bg-[#34d399] text-[#0f1117]'
+                        : 'bg-[#4a7dff] text-white hover:bg-[#3d6be6]')
+                    }
+                  >
+                    {shareCopied ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                        </svg>
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Expiry notice */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-[#f59e0b]/8 border border-[#f59e0b]/15 rounded-lg">
+                  <svg className="w-3.5 h-3.5 text-[#f59e0b] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-[#9ca0b0] text-xs">
+                    This link expires in 30 days. The shared report is a snapshot and will not reflect future updates.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ============ REPORT HEADER ============ */}
       {/* Investment memo header — company identity, date, verdict badge */}
