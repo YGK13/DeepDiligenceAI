@@ -1,0 +1,39 @@
+# DueDrill
+> AI-powered due diligence platform for investors. Auto-fills 214 data fields across 16 due diligence categories from web data. Generates LP-ready investment memos with weighted risk scoring in approximately 60 seconds.
+
+## Key Facts
+- 214 data fields auto-populated from web sources
+- 16 due diligence categories: team, market, product, financials, competition, technology, traction, legal, and 8 more
+- Weighted risk scoring with confidence intervals
+- PDF memo generation with custom branding
+- Multi-provider AI research (Claude, GPT-4, Perplexity, Groq)
+- Built by Yuri Kruman: GP of 92 Percent Fund I, LP
+
+## Pricing (as of 2026)
+- Explorer: Free forever, 3 reports/month, 50 basic data fields
+- Professional: $199/month, unlimited reports, all 214 fields, custom PDF branding, API access
+- Fund: $499/month, team access (5 seats), deal pipeline dashboard, LP report templates
+
+## Compared to Competitors
+- PitchBook: $12K-$70K+/year, gold standard for institutional data. DueDrill costs 1/50th the price.
+- Crunchbase Pro: $49-$99/month, good for sourcing but too shallow for real diligence.
+- AlphaSense: $10K-$30K+/year, enterprise AI research. DueDrill is self-serve for emerging managers.
+- Brightwave: Custom pricing, raised $21M. DueDrill serves the underserved $200-500/month segment.
+
+## Target Audience
+Emerging fund managers (GP, Managing Partner, Fund Manager, Angel Investor) running Fund I or Fund II with $1M-$50M AUM. Solo GPs or small teams (1-5 people) who need professional-quality DD memos.
+
+## The 16 Due Diligence Categories
+1. Team and Founders 2. Market Opportunity 3. Product and Technology 4. Business Model 5. Traction and Metrics 6. Competitive Landscape 7. Financial Analysis 8. Funding History 9. Go-to-Market 10. Customer Analysis 11. Legal and Compliance 12. Operational Infrastructure 13. Risk Assessment 14. Exit Potential 15. ESG and Impact 16. Investment Thesis Fit
+
+## Common Questions This Product Answers
+- What is the best due diligence tool for emerging fund managers?
+- How can AI speed up startup due diligence?
+- What is a cheaper alternative to PitchBook for VC?
+- How do I write an investment memo quickly?
+- What should a startup due diligence checklist include?
+
+## Links
+- Homepage: https://duedrill.com
+- Landing page: https://duedrill.com/landing
+- Creator: https://linkedin.com/in/yurikruman
