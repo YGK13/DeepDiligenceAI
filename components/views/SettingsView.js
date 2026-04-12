@@ -24,7 +24,7 @@ import ExportPanel from '@/components/export/ExportPanel';
 const PROVIDER_KEYS = ['perplexity', 'anthropic', 'openai', 'groq'];
 
 // ============ COMPONENT ============
-export default function SettingsView({ settings, onSave, onExport, onImport, companies, currentCompany }) {
+export default function SettingsView({ settings, onSave, onExport, onImport, companies, currentCompany, onStartTour }) {
   // ============ LOCAL STATE ============
   // Initialize from props to allow editing without immediately saving.
   // User must explicitly click "Save" to persist changes.
@@ -417,6 +417,35 @@ export default function SettingsView({ settings, onSave, onExport, onImport, com
           )}
         </div>
       </div>
+
+      {/* ============ SECTION 3: PRODUCT TOUR ============ */}
+      {/* Re-run the interactive guided walkthrough that highlights key features */}
+      {onStartTour && (
+        <div className="bg-[#1e2130] border border-[#2d3148] rounded-lg p-5">
+          <h2 className="text-[#e8e9ed] text-base font-semibold mb-2">
+            Product Tour
+          </h2>
+          <p className="text-[#6b7084] text-xs mb-4">
+            Re-run the interactive walkthrough that highlights key features like AI auto-fill, scoring and exports.
+          </p>
+          <button
+            onClick={onStartTour}
+            className={
+              'inline-flex items-center justify-center gap-2 ' +
+              'font-semibold rounded-lg border border-[#4a7dff]/30 ' +
+              'py-2 px-4 text-sm transition-all duration-200 cursor-pointer ' +
+              'bg-[#4a7dff]/10 text-[#4a7dff] ' +
+              'hover:bg-[#4a7dff]/20 active:bg-[#4a7dff]/30'
+            }
+          >
+            {/* Play icon */}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            Take Tour
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -29,6 +29,11 @@ import CompanyVerificationModal from '@/components/modals/CompanyVerificationMod
 import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 
 // ============================================================
+// PRODUCT TOUR — interactive guided walkthrough overlay
+// ============================================================
+import ProductTour from '@/components/onboarding/ProductTour';
+
+// ============================================================
 // GLOBAL SEARCH — cross-company search & filter overlay
 // ============================================================
 import GlobalSearch from '@/components/search/GlobalSearch';
@@ -176,6 +181,12 @@ export default function HomePage() {
   // Shown once for first-time users with no companies.
   // After completion or skip, localStorage flag prevents re-showing.
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // --- Product tour state ---
+  // Interactive guided walkthrough that spotlights key UI elements.
+  // Shows after onboarding wizard completes OR via "Take Tour" in Settings.
+  // Persisted to localStorage 'duedrill_tour_completed' so it only fires once.
+  const [showTour, setShowTour] = useState(false);
 
   // --- Global Activity Log state ---
   // Top-level audit trail separate from per-company logs.
@@ -1262,6 +1273,12 @@ export default function HomePage() {
           onImport={handleImportData}
           companies={companies}
           currentCompany={company}
+          onStartTour={() => {
+            // Reset the tour completion flag so it shows again,
+            // then trigger the tour overlay
+            try { localStorage.removeItem('duedrill_tour_completed'); } catch {}
+            setShowTour(true);
+          }}
         />
       );
     }
@@ -1424,9 +1441,31 @@ export default function HomePage() {
             setPendingCompanyUrl(url || '');
             setShowVerifyModal(true);
           }}
-          onSkip={() => setShowOnboarding(false)}
-          onComplete={() => setShowOnboarding(false)}
+          onSkip={() => {
+            setShowOnboarding(false);
+            // After skipping onboarding, offer the product tour if not completed
+            const tourDone = localStorage.getItem('duedrill_tour_completed');
+            if (!tourDone) setShowTour(true);
+          }}
+          onComplete={() => {
+            setShowOnboarding(false);
+            // After completing onboarding, start the product tour automatically
+            const tourDone = localStorage.getItem('duedrill_tour_completed');
+            if (!tourDone) setShowTour(true);
+          }}
           onLoadDemo={handleLoadDemo}
+        />
+      )}
+
+      {/* ============================================================ */}
+      {/* PRODUCT TOUR — interactive guided walkthrough                 */}
+      {/* Spotlights key UI elements step-by-step. Shows after          */}
+      {/* onboarding or when triggered from Settings "Take Tour".       */}
+      {/* ============================================================ */}
+      {showTour && (
+        <ProductTour
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
         />
       )}
 
