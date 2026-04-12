@@ -166,6 +166,7 @@ export default function TopBar({
 
         {/* ---------- New Company button ---------- */}
         <button
+          data-tour="new-company"
           onClick={onNewCompany}
           className={
             'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium ' +
@@ -233,7 +234,7 @@ export default function TopBar({
       {/* ============ RIGHT SIDE: Score Badge + Delete Button ============ */}
       <div className="flex items-center gap-3">
         {/* ---------- Overall score badge ---------- */}
-        <div className="flex items-center gap-2">
+        <div data-tour="score-badge" className="flex items-center gap-2">
           {/* Score number — large, colored by threshold */}
           <span className={`text-lg md:text-2xl font-bold ${scoreColor}`}>
             {overallScore != null ? overallScore : '--'}

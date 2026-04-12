@@ -200,6 +200,7 @@ function SectionGroup({
             return (
               <li key={item.id} className="relative group">
                 <button
+                  data-tour={`nav-${item.id}`}
                   onClick={() => onTabChange(item.id)}
                   className={
                     'w-full flex items-center gap-2 px-2 md:px-3 py-2 rounded-md ' +
@@ -418,7 +419,7 @@ export default function Sidebar({ activeTab, onTabChange, completionBadges = {} 
       </div>
 
       {/* ============ NAVIGATION — COLLAPSIBLE ACCORDION GROUPS ============ */}
-      <nav className="flex-1 py-3 px-2 md:px-3 space-y-2">
+      <nav data-tour="sidebar-nav" className="flex-1 py-3 px-2 md:px-3 space-y-2">
         {sectionKeys.map((sectionKey) => {
           const items = groupedItems[sectionKey];
           if (!items || items.length === 0) return null;

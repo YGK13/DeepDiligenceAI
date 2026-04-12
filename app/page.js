@@ -53,6 +53,7 @@ import MonitoringView from '@/components/views/MonitoringView';
 import BulkOperationsView from '@/components/views/BulkOperationsView';
 import TeamCollabView from '@/components/views/TeamCollabView';
 import ActivityLogView from '@/components/views/ActivityLogView';
+import NotesView from '@/components/views/NotesView';
 import UpgradePrompt from '@/components/ui/UpgradePrompt';
 import KeyboardShortcutsHelp from '@/components/ui/KeyboardShortcutsHelp';
 import ToastNotification from '@/components/ui/ToastNotification';
@@ -1210,6 +1211,12 @@ export default function HomePage() {
     // ============================================================
     if (activeTab === 'contacts') {
       return <ContactsView company={company} onChange={handleSectionChange} />;
+    }
+    // ============================================================
+    // NOTES — Deal notes & meeting log
+    // ============================================================
+    if (activeTab === 'notes') {
+      return <NotesView company={company} onChange={handleSectionChange} />;
     }
     // ============================================================
     // DOCUMENT VAULT — Per-company document storage

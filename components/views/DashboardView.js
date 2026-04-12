@@ -327,6 +327,7 @@ export default function DashboardView({ company, onResearchAll, onRetrySections,
               </p>
             </div>
             <button
+              data-tour="research-button"
               onClick={handleResearchAll}
               disabled={isResearching}
               className={
