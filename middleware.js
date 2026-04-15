@@ -56,6 +56,10 @@ const PUBLIC_ROUTES = [
   '/auth/confirm',
   '/api/stripe/webhook',
   '/api/waitlist',
+  '/googledc7df46b0486632f.html',  // GSC verification file
+  '/robots.txt',                    // Search engine crawlers
+  '/sitemap.xml',                   // Search engine crawlers
+  '/llms.txt',                      // AI answer engine crawlers
   '/api/og',
   '/share/',
   '/api/share/',
