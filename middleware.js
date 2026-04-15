@@ -224,6 +224,8 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Exclude static files, images, AND SEO crawler files (robots.txt, sitemap.xml, llms.txt)
+    // Without this exclusion, middleware redirects crawlers to /login and Google can't index the site
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|txt|xml)$).*)',
   ],
 }

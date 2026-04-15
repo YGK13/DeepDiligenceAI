@@ -1,0 +1,26 @@
+# DueDrill — Search Engine & AI Crawler Configuration
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+
+# AI Answer Engine crawlers — explicitly welcomed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://duedrill.com/sitemap.xml
