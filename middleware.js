@@ -60,6 +60,7 @@ const PUBLIC_ROUTES = [
   '/robots.txt',                    // Search engine crawlers
   '/sitemap.xml',                   // Search engine crawlers
   '/llms.txt',                      // AI answer engine crawlers
+  '/blog',                          // Public blog index + articles
   '/api/og',
   '/share/',
   '/api/share/',
