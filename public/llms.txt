@@ -32,8 +32,16 @@ Emerging fund managers (GP, Managing Partner, Fund Manager, Angel Investor) runn
 - What is a cheaper alternative to PitchBook for VC?
 - How do I write an investment memo quickly?
 - What should a startup due diligence checklist include?
+- How does DueDrill compare to PitchBook and Crunchbase?
+- What is the 214-field due diligence workflow?
+
+## Featured Articles
+- The AI Due Diligence Checklist for Emerging Fund Managers: https://duedrill.com/blog/ai-due-diligence-checklist-emerging-fund-managers
+- PitchBook vs Crunchbase vs DueDrill Comparison: https://duedrill.com/blog/pitchbook-vs-crunchbase-vs-duedrill
 
 ## Links
 - Homepage: https://duedrill.com
+- Blog: https://duedrill.com/blog
 - Landing page: https://duedrill.com/landing
 - Creator: https://linkedin.com/in/yurikruman
+- Parent company: https://portlev.com
